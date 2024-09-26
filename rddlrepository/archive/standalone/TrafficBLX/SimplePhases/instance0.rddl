@@ -29,13 +29,13 @@ non-fluents isolated_intersection {
         // cartesian coordinates
         X(i0) = 0;    Y(i0) = 0;
         SOURCE-X(l0) = 150;    SOURCE-Y(l0) = 0;
-        SOURCE-X(l2) = 100;    SOURCE-Y(l2) = 100;
+        SOURCE-X(l2) = 0;    SOURCE-Y(l2) = 150;
         SOURCE-X(l4) = -150;   SOURCE-Y(l4) = 0;
-        SOURCE-X(l6) = -100;   SOURCE-Y(l6) = -100;
+        SOURCE-X(l6) = 0;   SOURCE-Y(l6) = -150;
         SINK-X(l7) = 150;    SINK-Y(l7) = 0;
-        SINK-X(l1) = 100;    SINK-Y(l1) = 100;
+        SINK-X(l1) = 0;    SINK-Y(l1) = 150;
         SINK-X(l3) = -150;   SINK-Y(l3) = 0;
-        SINK-X(l5) = -100;   SINK-Y(l5) = -100;
+        SINK-X(l5) = 0;   SINK-Y(l5) = -150;
 
         // turns
         TURN(l0,l1);
@@ -101,19 +101,19 @@ non-fluents isolated_intersection {
         GREEN(l6,l7,@ALL-RED); GREEN(l6,l7,@WEST-EAST-LEFT); GREEN(l6,l7,@ALL-RED2); GREEN(l6,l7,@WEST-EAST-THROUGH); GREEN(l6,l7,@ALL-RED3); GREEN(l6,l7,@NORTH-SOUTH-LEFT); GREEN(l6,l7,@ALL-RED4); GREEN(l6,l7,@NORTH-SOUTH-THROUGH);
 
 
-        PHASE-MIN(i0, @WEST-EAST-LEFT) = 3;
-        PHASE-MIN(i0, @WEST-EAST-THROUGH) = 7;
-        PHASE-MIN(i0, @NORTH-SOUTH-LEFT) = 3;
-        PHASE-MIN(i0, @NORTH-SOUTH-THROUGH) = 7;
+        PHASE-MIN(i0, @WEST-EAST-LEFT) = 6;
+        PHASE-MIN(i0, @WEST-EAST-THROUGH) = 6;
+        PHASE-MIN(i0, @NORTH-SOUTH-LEFT) = 6;
+        PHASE-MIN(i0, @NORTH-SOUTH-THROUGH) = 6;
         PHASE-MIN(i0, @ALL-RED) = 4;
         PHASE-MIN(i0, @ALL-RED2) = 4;
         PHASE-MIN(i0, @ALL-RED3) = 4;
         PHASE-MIN(i0, @ALL-RED4) = 4;
 
-        PHASE-MAX(i0, @WEST-EAST-LEFT) = 80;
-        PHASE-MAX(i0, @WEST-EAST-THROUGH) = 80;
-        PHASE-MAX(i0, @NORTH-SOUTH-LEFT) = 80;
-        PHASE-MAX(i0, @NORTH-SOUTH-THROUGH) = 80;
+        PHASE-MAX(i0, @WEST-EAST-LEFT) = 60;
+        PHASE-MAX(i0, @WEST-EAST-THROUGH) = 60;
+        PHASE-MAX(i0, @NORTH-SOUTH-LEFT) = 60;
+        PHASE-MAX(i0, @NORTH-SOUTH-THROUGH) = 60;
         PHASE-MAX(i0, @ALL-RED) = 4;
         PHASE-MAX(i0, @ALL-RED2) = 4;
         PHASE-MAX(i0, @ALL-RED3) = 4;
