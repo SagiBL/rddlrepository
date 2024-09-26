@@ -15,14 +15,13 @@ cmlt_reward = 0
 state, _ = env.reset()
 for step in range(env.horizon):
     env.render()
-    action = agent.sample_action()
+    action = agent.sample_action(state,cmlt_reward)
     next_state, reward, terminated, truncated, _ = env.step(action)
-
     cmlt_reward = cmlt_reward + reward
     state = next_state
+    print(state["signal___i0"],state["signal-t___i0"])
     if truncated or terminated:
         break
 
 print(f'Episode ended with cumulative reward {cmlt_reward}')
-print('test')
 env.close()

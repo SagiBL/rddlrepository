@@ -200,15 +200,31 @@ class DemoAgent(BaseAgent):
         self.action_space = action_space
         self.num_actions = num_actions
         self.countdown = 20
-
-    def sample_action(self, state=None):
         action0 = {}
-        action0['advance___i0']=0
+        action0['advance___i0'] = 0
         action1 = {}
         action1['advance___i0'] = 1
-        if self.countdown>0:
-            self.countdown-=1
-            return action0
+        self.stay = action0
+        self.change = action1
+
+    def sample_action(self, state=None, cmlt_reward=0):
+        smart_action = self.stay
+        if state["signal___i0"]%2 == 0:
+            if state["signal-t___i0"] < 4:
+                return self.stay
+            else:
+                return self.change
         else:
-            self.countdown = 20
-            return action1
+            if state["signal-t___i0"] < 6:
+                return self.stay
+            elif state["signal-t___i0"] == 60:
+                return self.change
+            else:
+                return smart_action
+
+#        if self.countdown>0:
+#            self.countdown-=1
+#            return self.stay
+#        else:
+#            self.countdown = 20
+#            return self.change
