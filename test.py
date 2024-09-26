@@ -17,7 +17,6 @@ for step in range(env.horizon):
     env.render()
     action = agent.sample_action()
     next_state, reward, terminated, truncated, _ = env.step(action)
-    print(reward)
 
     cmlt_reward = cmlt_reward + reward
     state = next_state
@@ -26,5 +25,3 @@ for step in range(env.horizon):
 
 print(f'Episode ended with cumulative reward {cmlt_reward}')
 env.close()
-
-print(env.action_space.sample())
