@@ -24,4 +24,5 @@ for step in range(env.horizon):
         break
 
 print(f'Episode ended with cumulative reward {cmlt_reward}')
+print('test')
 env.close()
