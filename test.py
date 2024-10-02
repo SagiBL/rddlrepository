@@ -20,7 +20,7 @@ for step in range(env.horizon):
     cmlt_reward = cmlt_reward + reward
     state = next_state
     #print(state["signal___i0"],state["signal-t___i0"])
-    print(state['Nc___l0'])
+    #print(state['Nc___l0'])
     if truncated or terminated:
         break
 
