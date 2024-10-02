@@ -31,10 +31,8 @@ class MCTS:
         self.node_count = 0
         self.num_rollouts = 0
         self.env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0) #added an environment
-        action0 = {} #this is dumb but it works for now
-        action0['advance___i0'] = 0
-        action1 = {}
-        action1['advance___i0'] = 1
+        action0 = {'advance___i0':0}    #this is dumb but it works for now
+        action1 = {'advance___i0':1}
         self.stay = action0
         self.change = action1
         self.RandomAgent = agent1.RandomAgent(
@@ -49,57 +47,63 @@ class MCTS:
         while (len(node.child_stay)+len(node.child_change)) != 0:   #choose best child and advance state accordingly
             if len(node.child_stay)==0:
                 node = node.child_change
-                state = self.advance(state, "change")
+                state,_,_,_,_ = self.env.step(self.change)
             elif len(node.child_change)==0:
                 node = node.child_stay
-                state = self.advance(state, "stay")
+                state,_,_,_,_ = self.env.step(self.stay)
             elif node.child_stay.value < node.child_change.value:
                 node = node.child_change
-                state = self.advance(state,"change")
+                state,_,_,_,_ = self.env.step(self.change)
             else:
                 node = node.child_stay
-                state = self.advance(state,"stay")
+                state,_,_,_,_ = self.env.step(self.stay)
 
         if node.depth>200 :             #the simulation reached maximal depth
             return "sim depth over"
         else:
             if (state["signal___i0"]%2 == 0)and(state["signal-t___i0"] < 4)or((state["signal___i0"] % 2 == 1) and (state["signal-t___i0"] < 60)) :
                 node.child_stay = Node(node)     #create the stay_child
-                sim_reward = self.simulate(node,state)
+                sim_reward = self.simulate(state)
                 self.back_propagate(node,sim_reward)
-                return "stay"
+                return self.stay
 
             elif ((state["signal___i0"] % 2 == 0) and (state["signal-t___i0"] >= 4))or((state["signal___i0"] % 2 == 1) and (state["signal-t___i0"] >= 6)):
                 node.child_change = Node(node)   #create the change_child
-                sim_reward = self.simulate(node,state)
+                sim_reward = self.simulate(state)
                 self.back_propagate(node,sim_reward)
-                return "change"
+                return self.change
 
             else:                        #the simulation reached a dead end
                 return "reached dead end"
 
 
 
-    def advance(self,state,action):     #advance the state one step according to the action
-        if action == "stay":
-            action = self.stay
-        else:
-            action = self.change
-        next_state = self.env.step(action)
-        state = next_state
-        return state
-
-
-    def simulate(self,node,state):       #rollout the result to get final cumulative reward
-        sim_reward = 0
+    def simulate(self,state):       #rollout the result to get final cumulative reward
+        simulated_reward = 0
         for step in range(self.env.horizon):
             action = self.RandomAgent.sample_action(state)
             next_state, reward, terminated, truncated, _ = self.env.step(action)
-            sim_reward = sim_reward + reward
+            simulated_reward = simulated_reward + reward
             state = next_state
             if truncated or terminated:
                 break
-        return sim_reward
+        return simulated_reward
+
+    def simulate2(self,state):
+        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        agent = agent1.RandomAgent(
+            action_space=tmp_env.action_space,
+            num_actions=tmp_env.max_allowed_actions)
+        cmlt_reward = 0
+        for step in range(tmp_env.horizon):
+            action = agent.sample_action(state)
+            next_state, reward, terminated, truncated, _ = tmp_env.step(action)
+            cmlt_reward = cmlt_reward + reward
+            state = next_state
+            if truncated or terminated:
+                break
+        tmp_env.close()
+        return cmlt_reward
 
 
     def back_propagate(self,node, reward):
@@ -122,9 +126,9 @@ class MCTS:
 
     def best_action(self):    #returns the best move for the next iteration
         if self.root_node.child_stay.value < self.root_node.child_change.value:
-            return "change"
+            return self.change
         else:
-            return "stay"
+            return self.stay
 
 
     def statistics(self):      #return the overall calculation statistics
