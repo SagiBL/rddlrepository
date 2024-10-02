@@ -5,6 +5,7 @@ import gymnasium as gym
 import shutil
 from typing import Any, Dict, Optional
 import sys
+from MCTS import our_mcts
 
 from pyRDDLGym.core.env import RDDLEnv
 from pyRDDLGym.core.debug.exception import RDDLRandPolicyVecNotImplemented
@@ -208,7 +209,6 @@ class DemoAgent(BaseAgent):
         self.change = action1
 
     def sample_action(self, state=None, cmlt_reward=0):
-        smart_action = self.stay
         if state["signal___i0"]%2 == 0:
             if state["signal-t___i0"] < 4:
                 return self.stay
@@ -220,6 +220,7 @@ class DemoAgent(BaseAgent):
             elif state["signal-t___i0"] == 60:
                 return self.change
             else:
+                smart_action = self.stay
                 return smart_action
 
 #        if self.countdown>0:
