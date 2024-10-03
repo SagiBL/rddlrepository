@@ -6,7 +6,7 @@ import shutil
 from typing import Any, Dict, Optional
 import sys
 
-from our_mcts import MCTS
+from MCTS import our_mcts
 
 from pyRDDLGym.core.env import RDDLEnv
 from pyRDDLGym.core.debug.exception import RDDLRandPolicyVecNotImplemented
@@ -227,7 +227,7 @@ class mcts_Agent(BaseAgent):
 
 
     def sample_action(self, state=None, cmlt_reward=0):
-        smart_action = self.smart(state)
+        smart_action = self.stay
         if state["signal___i0"]%2 == 0:
             if state["signal-t___i0"] < 4:
                 return self.stay

@@ -7,7 +7,7 @@ import pyRDDLGym.core.policy
 
 env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
 
-agent = agent1.DemoAgent(
+agent = agent1.mcts_Agent(
     action_space=env.action_space,
     num_actions=env.max_allowed_actions)
 
