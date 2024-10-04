@@ -31,10 +31,8 @@ class MCTS:
         self.node_count = 0
         self.num_rollouts = 0
         self.env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0) #added an environment
-        action0 = {'advance___i0':0}    #this is dumb but it works for now
-        action1 = {'advance___i0':1}
-        self.stay = action0
-        self.change = action1
+        self.stay = {'advance___i0':0}    #this is dumb but it works for now
+        self.change = {'advance___i0':1}
         self.RandomAgent = agent1.RandomAgent(
             action_space=self.env.action_space,
             num_actions=self.env.max_allowed_actions)
