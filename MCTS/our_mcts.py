@@ -30,7 +30,7 @@ class MCTS:
         self.run_time = 0
         self.node_count = 0
         self.num_rollouts = 0
-        self.env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0) #added an environment
+        self.env = pyRDDLGym.make('TrafficBLX_SimplePhases', 1) #added an environment, using instance 1 for it's larger horizon
         self.stay = {'advance___i0':0}    #this is dumb but it works for now
         self.change = {'advance___i0':1}
         self.RandomAgent = agent1.RandomAgent(
@@ -42,7 +42,7 @@ class MCTS:
         node = self.root_node
         state = deepcopy(self.root_state)
 
-        while (len(node.child_stay)+len(node.child_change)) != 0:   #choose best child and advance state accordingly
+        while (len(node.child_stay)+len(node.child_change)) != 0:   #choose the best child and advance state accordingly
             if len(node.child_stay)==0:
                 node = node.child_change
                 state,_,_,_,_ = self.env.step(self.change)
@@ -78,7 +78,7 @@ class MCTS:
 
     def simulate(self,state):       #rollout the result to get final cumulative reward
         simulated_reward = 0
-        for step in range(self.env.horizon):
+        for step in range(1,200):#for 200 step, to simulate the original 200 steps intersection
             action = self.RandomAgent.sample_action(state)
             next_state, reward, terminated, truncated, _ = self.env.step(action)
             simulated_reward = simulated_reward + reward
@@ -104,7 +104,8 @@ class MCTS:
         return cmlt_reward
 
 
-    def back_propagate(self,node, reward):
+    def back_propagate(self, node, reward):
+        self.env.reset()#!!!!!!!!!!need to reset to root_state somehow!!!!!!!!!!!!!
         while node is not None:
             node.N += 1
             node.total_reward += reward
