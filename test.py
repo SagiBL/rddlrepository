@@ -13,13 +13,16 @@ agent = agent1.mcts_Agent(
 
 cmlt_reward = 0
 state, _ = env.reset()
-tmp_state = state
+print(state)
+tmp_state = {}
 for step in range(1,100):
-    env.render(to_display=False)
+    env.render(to_display=True)
     action = agent.sample_action(state,cmlt_reward)
     next_state, reward, terminated, truncated, _ = env.step(action)
     cmlt_reward = cmlt_reward + reward
     state = next_state
+    if step == 50:
+        tmp_state = state
     #print(state["signal___i0"],state["signal-t___i0"])
     #print(state['Nc___l0'])
     if truncated or terminated:
