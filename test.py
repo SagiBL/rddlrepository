@@ -14,7 +14,7 @@ agent = agent1.mcts_Agent(
 cmlt_reward = 0
 state, _ = env.reset()
 print(state)
-tmp_state = {}
+tmp_state = state
 for step in range(1,100):
     env.render(to_display=True)
     action = agent.sample_action(state,cmlt_reward)
@@ -22,9 +22,7 @@ for step in range(1,100):
     cmlt_reward = cmlt_reward + reward
     state = next_state
     if step == 50:
-        tmp_state = state
-    #print(state["signal___i0"],state["signal-t___i0"])
-    #print(state['Nc___l0'])
+        state, _ = env.set_state(tmp_state, 0)
     if truncated or terminated:
         break
 print(f'Episode ended with cumulative reward {cmlt_reward}')
