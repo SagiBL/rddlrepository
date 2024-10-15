@@ -225,16 +225,16 @@ class mcts_Agent(BaseAgent):
 
 
     def sample_action(self, state=None, cmlt_reward=0):
-        smart_action = self.stay
-        if state["signal___i0"]%2 == 0:
-            if state["signal-t___i0"] < 4:
+        smart_action = self.change
+        if state['signal___i0']%2 == 0:
+            if state['signal-t___i0'] < 4:
                 return self.stay
             else:
                 return self.change
         else:
-            if state["signal-t___i0"] < 6:
+            if state['signal-t___i0'] < 6:
                 return self.stay
-            elif state["signal-t___i0"] == 60:
+            elif state['signal-t___i0'] == 60:
                 return self.change
             else:
                 return smart_action
