@@ -10,13 +10,14 @@ max_reward = 17644.851216448555
 sim_reward = 0
 
 class Node:    #define the format of the nodes
-    def __init__(self, parent):
+    def __init__(self, parent, state):
         self.parent = parent
         self.N = 0
         self.total_reward = 0
         self.child_stay = None
         self.child_change = None
         self.depth = parent.depth + 1
+        self.state = state
 
 
     def value(self, explore=explore_c):  #calculate the UCB
@@ -89,19 +90,21 @@ class MCTS:
 
     def simulate2(self,state):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        _ = tmp_env.reset()
+        _ = tmp_env.set_state(state)
         agent = agent1.RandomAgent(
             action_space=tmp_env.action_space,
             num_actions=tmp_env.max_allowed_actions)
-        cmlt_reward = 0
+        simulated_reward = 0
         for step in range(tmp_env.horizon):
             action = agent.sample_action(state)
             next_state, reward, terminated, truncated, _ = tmp_env.step(action)
-            cmlt_reward = cmlt_reward + reward
+            simulated_reward = simulated_reward + reward
             state = next_state
             if truncated or terminated:
                 break
         tmp_env.close()
-        return cmlt_reward
+        return simulated_reward
 
 
     def back_propagate(self, node, reward):
