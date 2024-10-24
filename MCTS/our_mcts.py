@@ -4,6 +4,7 @@ import math
 from copy import deepcopy
 import pyRDDLGym
 import agent1
+from test import tmp_state
 
 explore_c=2
 max_reward = 17644.851216448555
@@ -27,68 +28,82 @@ class Node:    #define the format of the nodes
 class MCTS:
     def __init__(self, state):    #initialize the tree
         self.root_state = deepcopy(state)
-        self.root_node = Node(None)
+        self.root_node = Node(None, self.root_state)
         self.run_time = 0
         self.node_count = 0
         self.num_rollouts = 0
-        self.env = pyRDDLGym.make('TrafficBLX_SimplePhases', 1) #added an environment, using instance 1 for it's larger horizon
         self.stay = {'advance___i0':0}    #this is dumb but it works for now
         self.change = {'advance___i0':1}
-        self.RandomAgent = agent1.RandomAgent(
-            action_space=self.env.action_space,
-            num_actions=self.env.max_allowed_actions)
-
 
     def step(self):   # preforms one step of expansion and simulates it
         node = self.root_node
-        state = deepcopy(self.root_state)
 
         while (len(node.child_stay)+len(node.child_change)) != 0:   #choose the best child and advance state accordingly
             if len(node.child_stay)==0:
                 node = node.child_change
-                state,_,_,_,_ = self.env.step(self.change)
             elif len(node.child_change)==0:
                 node = node.child_stay
-                state,_,_,_,_ = self.env.step(self.stay)
             elif node.child_stay.value < node.child_change.value:
                 node = node.child_change
-                state,_,_,_,_ = self.env.step(self.change)
             else:
                 node = node.child_stay
-                state,_,_,_,_ = self.env.step(self.stay)
-
         if node.depth>200 :             #the simulation reached maximal depth
             return "sim depth over"
         else:
-            if (state["signal___i0"]%2 == 0)and(state["signal-t___i0"] < 4)or((state["signal___i0"] % 2 == 1) and (state["signal-t___i0"] < 60)) :
-                node.child_stay = Node(node)     #create the stay_child
-                sim_reward = self.simulate(state)
-                self.back_propagate(node,sim_reward)
-                return self.stay
+            # if ((node.state["signal___i0"]%2 == 0) and (node.state["signal-t___i0"] < 4)) or ((node.state["signal___i0"] % 2 == 1) and (node.state["signal-t___i0"] < 60)) :
+            #     tmp_state = self.one_step(node.state, self.stay)
+            #     node.child_stay = Node(node, tmp_state)     #create the stay_child
+            #     sim_reward = self.simulate(node.state)
+            #     self.back_propagate(node,sim_reward)
+            #     return self.stay
+            #
+            # elif ((node.state["signal___i0"] % 2 == 0) and (node.state["signal-t___i0"] >= 4)) or ((node.state["signal___i0"] % 2 == 1) and (node.state["signal-t___i0"] >= 6)):
+            #     tmp_state = self.one_step(node.state, self.change)
+            #     node.child_change = Node(node, tmp_state)   #create the change_child
+            #     sim_reward = self.simulate(node.state)
+            #     self.back_propagate(node,sim_reward)
+            #     return self.change
 
-            elif ((state["signal___i0"] % 2 == 0) and (state["signal-t___i0"] >= 4))or((state["signal___i0"] % 2 == 1) and (state["signal-t___i0"] >= 6)):
-                node.child_change = Node(node)   #create the change_child
-                sim_reward = self.simulate(state)
-                self.back_propagate(node,sim_reward)
-                return self.change
+            if node.state['signal___i0'] % 2 == 0:
+                if node.state['signal-t___i0'] < 4: #if it's still red light
+                    tmp_state = self.one_step(node.state, self.stay)
+                    node.child_stay = Node(node, tmp_state)  # create the stay_child
+                else: #if it's done being red light
+                    tmp_state = self.one_step(node.state, self.change)
+                    node.child_change = Node(node, tmp_state)  # create the change_child
+            else:
+                if node.state['signal-t___i0'] < 6: #if it's too early to change
+                    tmp_state = self.one_step(node.state, self.stay)
+                    node.child_stay = Node(node, tmp_state)  # create the stay_child
+                elif node.state['signal-t___i0'] == 60: #if reached the maximum time without changing
+                    tmp_state = self.one_step(node.state, self.change)
+                    node.child_change = Node(node, tmp_state)  # create the change_child
+                else: #both changing and staying are legal moves
+                    tmp_state = self.one_step(node.state, self.stay)
+                    node.child_stay = Node(node, tmp_state)  # create the stay_child
+                    tmp_state = self.one_step(node.state, self.change)
+                    node.child_change = Node(node, tmp_state)  # create the change_child
 
-            else:                        #the simulation reached a dead end
-                return "reached dead end"
+    def one_step(self, state, action):
+        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        _ = tmp_env.reset()
+        _ = tmp_env.set_state(state)
+        next_state, reward, terminated, truncated, _ = tmp_env.step(action)
+        return next_state
 
 
+    # def simulate(self,state):       #rollout the result to get final cumulative reward
+    #     simulated_reward = 0
+    #     for step in range(1,200):#for 200 step, to simulate the original 200 steps intersection
+    #         action = self.RandomAgent.sample_action(state)
+    #         next_state, reward, terminated, truncated, _ = self.env.step(action)
+    #         simulated_reward = simulated_reward + reward
+    #         state = next_state
+    #         if truncated or terminated:
+    #             break
+    #     return simulated_reward
 
-    def simulate(self,state):       #rollout the result to get final cumulative reward
-        simulated_reward = 0
-        for step in range(1,200):#for 200 step, to simulate the original 200 steps intersection
-            action = self.RandomAgent.sample_action(state)
-            next_state, reward, terminated, truncated, _ = self.env.step(action)
-            simulated_reward = simulated_reward + reward
-            state = next_state
-            if truncated or terminated:
-                break
-        return simulated_reward
-
-    def simulate2(self,state):
+    def simulate(self,state):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
         _ = tmp_env.reset()
         _ = tmp_env.set_state(state)
@@ -108,7 +123,6 @@ class MCTS:
 
 
     def back_propagate(self, node, reward):
-        self.env.reset()#!!!!!!!!!!need to reset to root_state somehow!!!!!!!!!!!!!
         while node is not None:
             node.N += 1
             node.total_reward += reward
