@@ -4,7 +4,6 @@ import math
 from copy import deepcopy
 import pyRDDLGym
 import agent1
-from test import tmp_state
 
 explore_c=2
 max_reward = 17644.851216448555
@@ -17,7 +16,10 @@ class Node:    #define the format of the nodes
         self.total_reward = 0
         self.child_stay = None
         self.child_change = None
-        self.depth = parent.depth + 1
+        if parent is not None:
+            self.depth = parent.depth + 1
+        else:
+            self.depth = 0
         self.state = state
 
 
@@ -81,9 +83,11 @@ class MCTS:
                 else: #both changing and staying are legal moves
                     tmp_state = self.one_step(node.state, self.stay)
                     node.child_stay = Node(node, tmp_state)  # create the stay_child
+                    node.child_stay.total_reward = self.simulate(tmp_state)
                     tmp_state = self.one_step(node.state, self.change)
                     node.child_change = Node(node, tmp_state)  # create the change_child
-
+                    node.child_change.total_reward = self.simulate(tmp_state)
+            self.back_propagate(node, node.total_reward) #doing it like that make it so it simulates and gives a reward to the children, but don't backpropogate it upwards until it will reach them again
     def one_step(self, state, action):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
         _ = tmp_env.reset()
@@ -103,7 +107,7 @@ class MCTS:
     #             break
     #     return simulated_reward
 
-    def simulate(self,state):
+    def simulate(self, state):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
         _ = tmp_env.reset()
         _ = tmp_env.set_state(state)
