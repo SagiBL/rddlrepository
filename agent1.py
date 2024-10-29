@@ -206,26 +206,17 @@ class mcts_Agent(BaseAgent):
         self.change = {'advance___i0': 1}
 
     def smart(self,state):            #the framework for running the mcts
-        mcts = MCTS(state)
-        step_status = mcts.step
-        action = None
-        if step_status == "sim depth over":
-            print("sim depth over")
-        elif step_status == "reached dead end":
-            print("reached dead end")
-        else:
-            print("Thinking...")
-            mcts.search(8)
-            num_rollouts, run_time = mcts.statistics()
-            print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
-            action = mcts.best_action()
-            print("MCTS chose action: ", action)
-
+        mcts = our_mcts.MCTS(state)
+        print("Thinking...")
+        mcts.search(2)
+        num_rollouts, run_time = mcts.statistics()
+        print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
+        action = mcts.best_action()
+        print("MCTS chose action: ", action)
         return action
 
 
     def sample_action(self, state=None, cmlt_reward=0):
-        smart_action = self.change
         if state['signal___i0']%2 == 0:
             if state['signal-t___i0'] < 4:
                 return self.stay
@@ -237,6 +228,7 @@ class mcts_Agent(BaseAgent):
             elif state['signal-t___i0'] == 60:
                 return self.change
             else:
+                smart_action = self.smart(state)
                 return smart_action
 
 #        if self.countdown>0:

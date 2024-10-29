@@ -12,7 +12,7 @@ sim_reward = 0
 class Node:    #define the format of the nodes
     def __init__(self, parent, state):
         self.parent = parent
-        self.N = 0
+        self.N = 1
         self.total_reward = 0
         self.child_stay = None
         self.child_change = None
@@ -24,7 +24,8 @@ class Node:    #define the format of the nodes
 
 
     def value(self, explore=explore_c):  #calculate the UCB
-        return -max_reward+(self.total_reward / self.N) + explore * math.sqrt(math.log(self.parent.N) / self.N)
+        val = float(-max_reward+(self.total_reward / self.N) + explore * math.sqrt(math.log(self.parent.N) / self.N))
+        return val
 
 
 class MCTS:
@@ -37,20 +38,19 @@ class MCTS:
         self.stay = {'advance___i0':0}    #this is dumb but it works for now
         self.change = {'advance___i0':1}
 
+
     def step(self):   # preforms one step of expansion and simulates it
         node = self.root_node
 
-        while (len(node.child_stay)+len(node.child_change)) != 0:   #choose the best child and advance state accordingly
-            if len(node.child_stay)==0:
+        while node.child_stay is not None or node.child_change is not None:   #choose the best child and advance state accordingly
+            if node.child_stay is None:
                 node = node.child_change
-            elif len(node.child_change)==0:
+            elif node.child_change is None:
                 node = node.child_stay
-            elif node.child_stay.value < node.child_change.value:
+            elif node.child_stay.value() < node.child_change.value():
                 node = node.child_change
             else:
                 node = node.child_stay
-        if node.depth>200 :             #the simulation reached maximal depth
-            return "sim depth over"
         else:
             # if ((node.state["signal___i0"]%2 == 0) and (node.state["signal-t___i0"] < 4)) or ((node.state["signal___i0"] % 2 == 1) and (node.state["signal-t___i0"] < 60)) :
             #     tmp_state = self.one_step(node.state, self.stay)
@@ -88,11 +88,14 @@ class MCTS:
                     node.child_change = Node(node, tmp_state)  # create the change_child
                     node.child_change.total_reward = self.simulate(tmp_state)
             self.back_propagate(node, node.total_reward) #doing it like that make it so it simulates and gives a reward to the children, but don't backpropogate it upwards until it will reach them again
+
+
     def one_step(self, state, action):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
         _ = tmp_env.reset()
         _ = tmp_env.set_state(state)
         next_state, reward, terminated, truncated, _ = tmp_env.step(action)
+        tmp_env.close()
         return next_state
 
 
@@ -145,7 +148,7 @@ class MCTS:
 
 
     def best_action(self):    #returns the best move for the next iteration
-        if self.root_node.child_stay.value < self.root_node.child_change.value:
+        if self.root_node.child_stay.value() < self.root_node.child_change.value():
             return self.change
         else:
             return self.stay
