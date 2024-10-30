@@ -93,7 +93,7 @@ class MCTS:
     def one_step(self, state, action):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
         _ = tmp_env.reset()
-        _ = tmp_env.set_state(state)
+        tmp_env.set_state(state)
         next_state, reward, terminated, truncated, _ = tmp_env.step(action)
         tmp_env.close()
         return next_state
@@ -113,7 +113,7 @@ class MCTS:
     def simulate(self, state):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
         _ = tmp_env.reset()
-        _ = tmp_env.set_state(state)
+        tmp_env.set_state(state)
         agent = agent1.RandomAgent(
             action_space=tmp_env.action_space,
             num_actions=tmp_env.max_allowed_actions)
