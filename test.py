@@ -12,6 +12,7 @@ agent = agent1.mcts_Agent(
 cmlt_reward = 0
 state, _ = env.reset()
 for step in range(1,200):
+    print("step",step)
     env.render(to_display=True)
     action = agent.sample_action(state)
     next_state, reward, terminated, truncated, _ = env.step(action)

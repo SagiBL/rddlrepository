@@ -7,9 +7,8 @@ import agent1
 from collections import deque
 from binarytree import build
 
-explore_c=10000
-#max_reward = -17644.851216448555
-max_reward = -10000
+explore_c=1000
+max_reward = -17644.851216448555
 sim_reward = 0
 red_time = 4
 min_green = 6
@@ -53,16 +52,16 @@ class MCTS:
         while node.child_stay is not None or node.child_change is not None:   #choose the best child and advance state accordingly
             if node.child_stay is None:
                 node = node.child_change
+                #print("must change")
             elif node.child_change is None:
                 node = node.child_stay
+                #print("must stay")
             elif node.child_stay.value() < node.child_change.value():
                 node = node.child_change
-                if node.parent.parent is not None:
-                    print("went to change")
+                #print("decide to change")
             else:
                 node = node.child_stay
-                if node.parent.parent is not None:
-                    print("went to stay")
+                #print("decide to stay")
 
             # if ((node.state["signal___i0"]%2 == 0) and (node.state["signal-t___i0"] < 4)) or ((node.state["signal___i0"] % 2 == 1) and (node.state["signal-t___i0"] < 60)) :
             #     tmp_state = self.one_step(node.state, self.stay)
@@ -77,8 +76,9 @@ class MCTS:
             #     sim_reward = self.simulate(node.state)
             #     self.back_propagate(node,sim_reward)
             #     return self.change
-        print(node.state['signal___i0'])
-        print(node.state['signal-t___i0'])
+        # print(node.state['signal___i0'])
+        # print(node.state['signal-t___i0'])
+        #print("finish")
         if node.state['signal___i0'] % 2 == 0:
             if node.state['signal-t___i0'] < red_time: #if it's still red light
                 tmp_state = self.one_step(node.state, self.stay)
@@ -187,7 +187,7 @@ class MCTS:
             current_node = queue.popleft()  # Dequeue the front node
             if current_node is None:
                 results.append(0)
-                values.append(7)
+                values.append(0)
                 visits.append(0)
                 queue.append(None)
                 queue.append(None)
