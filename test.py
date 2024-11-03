@@ -1,8 +1,6 @@
 from rddlrepository.core.manager import RDDLRepoManager
 manager = RDDLRepoManager(rebuild=True)
 import agent1
-
-import pyRDDLGym
 import pyRDDLGym.core.policy
 
 env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
@@ -13,10 +11,10 @@ agent = agent1.mcts_Agent(
 
 cmlt_reward = 0
 state, _ = env.reset()
-print(state)
+
 for step in range(1,200):
-    env.render(to_display=True)
-    action = agent.sample_action(state,cmlt_reward)
+    #env.render(to_display=True)
+    action = agent.sample_action(state)
     next_state, reward, terminated, truncated, _ = env.step(action)
     cmlt_reward = cmlt_reward + reward
     state = next_state

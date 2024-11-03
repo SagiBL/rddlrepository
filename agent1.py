@@ -4,7 +4,6 @@ import random
 import gymnasium as gym
 import shutil
 from typing import Any, Dict, Optional
-import sys
 
 from MCTS import our_mcts
 
@@ -206,17 +205,37 @@ class mcts_Agent(BaseAgent):
         self.change = {'advance___i0': 1}
 
     def smart(self,state):            #the framework for running the mcts
+        results = []
+        values = []
+        visits = []
         mcts = our_mcts.MCTS(state)
         print("Thinking...")
-        mcts.search(2)
+        mcts.search(10)
         num_rollouts, run_time = mcts.statistics()
         print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
         action = mcts.best_action()
         print("MCTS chose action: ", action)
+        updated_results,updated_values,updated_visits = our_mcts.MCTS.bfs_traversal(mcts, results,values,visits)
+        #cnt=0
+        #prev=1
+        # for num in updated_results:
+        #     if num==0:
+        #         cnt += 1
+        #     elif prev!=0:
+        #         print(num)
+        #     else:
+        #         print("0-",cnt)
+        #         cnt=0
+        #         print(num)
+        #     prev = num
+        print("visits",updated_visits)
+        print("values",updated_values)
+        print("results",updated_results)
+        our_mcts.MCTS.build_tree(mcts,updated_values)
         return action
 
 
-    def sample_action(self, state=None, cmlt_reward=0):
+    def sample_action(self, state=None):
         if state['signal___i0']%2 == 0:
             if state['signal-t___i0'] < 4:
                 return self.stay
