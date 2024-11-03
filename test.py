@@ -16,7 +16,7 @@ state, _ = env.reset()
 for step in range(1,200):
     print("step",step)
     env.render(to_display=True)
-    action = agent.sample_action(state,cmlt_reward)
+    action = agent.sample_action(state)
     next_state, reward, terminated, truncated, _ = env.step(action)
     cmlt_reward = cmlt_reward + reward
     state = next_state
