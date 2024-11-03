@@ -64,22 +64,10 @@ class MCTS:
                 node = node.child_stay
                 #print("decide to stay")
 
-            # if ((node.state["signal___i0"]%2 == 0) and (node.state["signal-t___i0"] < 4)) or ((node.state["signal___i0"] % 2 == 1) and (node.state["signal-t___i0"] < 60)) :
-            #     tmp_state = self.one_step(node.state, self.stay)
-            #     node.child_stay = Node(node, tmp_state)     #create the stay_child
-            #     sim_reward = self.simulate(node.state)
-            #     self.back_propagate(node,sim_reward)
-            #     return self.stay
-            #
-            # elif ((node.state["signal___i0"] % 2 == 0) and (node.state["signal-t___i0"] >= 4)) or ((node.state["signal___i0"] % 2 == 1) and (node.state["signal-t___i0"] >= 6)):
-            #     tmp_state = self.one_step(node.state, self.change)
-            #     node.child_change = Node(node, tmp_state)   #create the change_child
-            #     sim_reward = self.simulate(node.state)
-            #     self.back_propagate(node,sim_reward)
-            #     return self.change
+        # print("finish")
         # print(node.state['signal___i0'])
         # print(node.state['signal-t___i0'])
-        #print("finish")
+
         if node.state['signal___i0'] % 2 == 0:
             if node.state['signal-t___i0'] < red_time: #if it's still red light
                 tmp_state = self.one_step(node.state, self.stay)
@@ -117,17 +105,6 @@ class MCTS:
         tmp_env.close()
         return next_state
 
-
-    # def simulate(self,state):       #rollout the result to get final cumulative reward
-    #     simulated_reward = 0
-    #     for step in range(1,200):#for 200 step, to simulate the original 200 steps intersection
-    #         action = self.RandomAgent.sample_action(state)
-    #         next_state, reward, terminated, truncated, _ = self.env.step(action)
-    #         simulated_reward = simulated_reward + reward
-    #         state = next_state
-    #         if truncated or terminated:
-    #             break
-    #     return simulated_reward
 
     def simulate(self, state):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
@@ -170,7 +147,7 @@ class MCTS:
 
 
     def best_action(self):    #returns the best move for the next iteration
-        if self.root_node.child_stay.value(self.explore) < self.root_node.child_change.value(self.explore):
+        if self.root_node.child_stay.value(explore=0) < self.root_node.child_change.value(explore=0):
             return self.change
         else:
             return self.stay

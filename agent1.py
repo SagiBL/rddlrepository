@@ -199,13 +199,13 @@ class NoOpAgent(BaseAgent):
 
 
 class mcts_Agent(BaseAgent):
-    def __init__(self, action_space, num_actions=0, explore=explore_c):
+    def __init__(self, action_space, num_actions=0, explore=explore_c,search_time=0):
         self.action_space = action_space
         self.num_actions = num_actions
-        self.countdown = 20
         self.stay = {'advance___i0': 0}  # this is dumb but it works for now
         self.change = {'advance___i0': 1}
         self.explore = explore
+        self.search_time = search_time
 
 
     def printing(self, mcts):
@@ -233,12 +233,12 @@ class mcts_Agent(BaseAgent):
 
     def smart(self,state):            #the framework for running the mcts
         mcts = our_mcts.MCTS(state, explore=self.explore)
-        # print("Thinking...")
-        mcts.search(30) #how much time it runs
-        num_rollouts, run_time = mcts.statistics()
-        # print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
+        #print("Thinking...")
+        mcts.search(self.search_time) #how much time it runs
+        #num_rollouts, run_time = mcts.statistics()
+        #print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
         action = mcts.best_action()
-        # print("MCTS chose action: ", action)
+        #print("MCTS chose action: ", action)
         #printing(mcts)
         return action
 
@@ -257,10 +257,3 @@ class mcts_Agent(BaseAgent):
             else:
                 smart_action = self.smart(state)
                 return smart_action
-
-#        if self.countdown>0:
-#            self.countdown-=1
-#            return self.stay
-#        else:
-#            self.countdown = 20
-#            return self.change
