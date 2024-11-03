@@ -1,6 +1,8 @@
 from rddlrepository.core.manager import RDDLRepoManager
 manager = RDDLRepoManager(rebuild=True)
 import agent1
+
+import pyRDDLGym
 import pyRDDLGym.core.policy
 
 env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
