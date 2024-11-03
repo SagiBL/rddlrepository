@@ -11,9 +11,22 @@ agent = agent1.mcts_Agent(
 
 cmlt_reward = 0
 state, _ = env.reset()
-
-for step in range(1,200):
-    #env.render(to_display=True)
+tmp_state = state
+for step in range(1,50):
+    env.render(to_display=True)
+    action = agent.sample_action(state)
+    next_state, reward, terminated, truncated, _ = env.step(action)
+    cmlt_reward = cmlt_reward + reward
+    state = next_state
+    if step == 30:
+        tmp_state = state
+    if truncated or terminated:
+        break
+state, _ = env.reset()
+state = tmp_state
+env.set_state(state)
+for step in range(1,50):
+    env.render(to_display=True)
     action = agent.sample_action(state)
     next_state, reward, terminated, truncated, _ = env.step(action)
     cmlt_reward = cmlt_reward + reward

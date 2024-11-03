@@ -247,7 +247,7 @@ class mcts_Agent(BaseAgent):
             elif state['signal-t___i0'] == 60:
                 return self.change
             else:
-                smart_action = self.smart(state)
+                smart_action = self.stay
                 return smart_action
 
 #        if self.countdown>0:
