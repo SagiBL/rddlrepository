@@ -22,3 +22,4 @@ for step in range(1,200):
         break
 print(f'Episode ended with cumulative reward {cmlt_reward}')
 env.close()
+
