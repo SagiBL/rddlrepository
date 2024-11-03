@@ -37,7 +37,7 @@ class Node:    #define the format of the nodes
 
 
 class MCTS:
-    def __init__(self, state):    #initialize the tree
+    def __init__(self, state, explore=explore_c):    #initialize the tree
         self.root_state = deepcopy(state)
         self.root_node = Node(None, self.root_state)
         self.run_time = 0
@@ -45,6 +45,7 @@ class MCTS:
         self.num_rollouts = 0
         self.stay = {'advance___i0':0}    #this is dumb but it works for now
         self.change = {'advance___i0':1}
+        self.explore = explore
 
 
     def step(self):   # preforms one step of expansion and simulates it
@@ -56,7 +57,7 @@ class MCTS:
             elif node.child_change is None:
                 node = node.child_stay
                 #print("must stay")
-            elif node.child_stay.value() < node.child_change.value():
+            elif node.child_stay.value(self.explore) < node.child_change.value(self.explore):
                 node = node.child_change
                 #print("decide to change")
             else:
@@ -169,7 +170,7 @@ class MCTS:
 
 
     def best_action(self):    #returns the best move for the next iteration
-        if self.root_node.child_stay.value() < self.root_node.child_change.value():
+        if self.root_node.child_stay.value(self.explore) < self.root_node.child_change.value(self.explore):
             return self.change
         else:
             return self.stay
@@ -193,7 +194,7 @@ class MCTS:
                 queue.append(None)
             else:
                 results.append(int(-max_reward+(current_node.total_reward / current_node.N)))  # Visit the node
-                values.append(current_node.value())
+                values.append(current_node.value(self.explore))
                 visits.append(current_node.N)
                 queue.append(current_node.child_change)                    # Enqueue the left and right children
                 queue.append(current_node.child_stay)
