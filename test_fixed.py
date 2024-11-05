@@ -10,9 +10,9 @@ change = {'advance___i0': 1}
 seed_arr = [1,2,3,4,5]
 for seed in seed_arr:
     print()
-    print("******")
+    print("***********")
     print("testing seed", seed)
-    print("******")
+    print("***********")
     exp_arr = [100,200,300]
     rewards_arr = []
     for explore in exp_arr:
