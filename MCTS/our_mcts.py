@@ -3,12 +3,13 @@ import math
 from copy import deepcopy
 import pyRDDLGym
 import agent1
-#import pygraphviz as pgv
+# import pygraphviz as pgv
 from collections import deque
 from binarytree import build
 
 explore_c=1000
-max_reward = -17644.851216448555
+# max_reward = -17644.851216448555
+max_reward = -12000
 sim_reward = 0
 red_time = 4
 min_green = 6
@@ -37,9 +38,10 @@ class Node:    #define the format of the nodes
 
 
 class MCTS:
-    def __init__(self, state, explore=explore_c):    #initialize the tree
+    def __init__(self, state, depth_of_root, explore=explore_c):    #initialize the tree
         self.root_state = deepcopy(state)
         self.root_node = Node(None, self.root_state)
+        self.root_node.depth = depth_of_root
         self.run_time = 0
         self.node_count = 0
         self.num_rollouts = 0
@@ -114,7 +116,8 @@ class MCTS:
             action_space=tmp_env.action_space,
             num_actions=tmp_env.max_allowed_actions)
         simulated_reward = 0
-        for step in range(tmp_env.horizon):
+        for step in range(tmp_env.horizon-self.root_node.depth):
+            # print("inner step ", step)
             action = agent.sample_action(state)
             next_state, reward, terminated, truncated, _ = tmp_env.step(action)
             simulated_reward = simulated_reward + reward

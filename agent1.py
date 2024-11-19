@@ -231,19 +231,19 @@ class mcts_Agent(BaseAgent):
         our_mcts.MCTS.build_tree(mcts, updated_visits)
 
 
-    def smart(self,state):            #the framework for running the mcts
-        mcts = our_mcts.MCTS(state, explore=self.explore)
-        #rint("Thinking...")
+    def smart(self,state,depth_of_root):            #the framework for running the mcts
+        mcts = our_mcts.MCTS(state, depth_of_root, explore=self.explore)
+        print("Thinking...")
         mcts.search(self.search_time) #how much time it runs
-        #num_rollouts, run_time = mcts.statistics()
-        #print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
+        num_rollouts, run_time = mcts.statistics()
+        print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
         action = mcts.best_action()
         #print("MCTS chose action: ", action)
         #self.printing(mcts)
         return action
 
 
-    def sample_action(self, state=None):
+    def sample_action(self, state=None, depth_of_root=0):
         if state['signal___i0']%2 == 0:
             if state['signal-t___i0'] < 4:
                 return self.stay
@@ -255,5 +255,5 @@ class mcts_Agent(BaseAgent):
             elif state['signal-t___i0'] == 60:
                 return self.change
             else:
-                smart_action = self.smart(state)
+                smart_action = self.smart(state,depth_of_root)
                 return smart_action

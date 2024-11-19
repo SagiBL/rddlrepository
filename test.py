@@ -4,7 +4,7 @@ import agent1
 
 import pyRDDLGym.core.policy
 #exp_arr = [400,400,400,400,400,100,100,100,100,100,1,5,10,100,500,1000,2000,5000,10000]
-exp_arr = [100,100,100,100,100]
+exp_arr = [100]
 
 rewards_arr = []
 for explore in exp_arr:
@@ -14,14 +14,14 @@ for explore in exp_arr:
         action_space=env.action_space,
         num_actions=env.max_allowed_actions,
         explore=explore,
-        search_time=30)
+        search_time=1)
 
     cmlt_reward = 0
     state, _ = env.reset()
     for step in range(env.horizon):
-        #print("step =", step,"| reward =", cmlt_reward)
+        print("step =", step,"| reward =", cmlt_reward)
         #env.render(to_display=True)
-        action = agent.sample_action(state)
+        action = agent.sample_action(state,step)
         next_state, reward, terminated, truncated, _ = env.step(action)
         cmlt_reward = cmlt_reward + reward
         state = next_state
@@ -33,5 +33,5 @@ for explore in exp_arr:
     rewards_arr.append(cmlt_reward)
 print(exp_arr)
 print(rewards_arr)
-print("average for explore=100",(rewards_arr[0]+rewards_arr[1]+rewards_arr[2]+rewards_arr[3]+rewards_arr[4])/5)
+#print("average for explore=100",(rewards_arr[0]+rewards_arr[1]+rewards_arr[2]+rewards_arr[3]+rewards_arr[4])/5)
 #print("average for explore=100",(rewards_arr[5]+rewards_arr[6]+rewards_arr[7]+rewards_arr[8]+rewards_arr[9])/5)
