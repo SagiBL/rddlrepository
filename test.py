@@ -1,6 +1,6 @@
 from rddlrepository.core.manager import RDDLRepoManager
 manager = RDDLRepoManager(rebuild=True)
-import agent1
+from MCTS import agent
 
 import pyRDDLGym.core.policy
 #exp_arr = [400,400,400,400,400,100,100,100,100,100,1,5,10,100,500,1000,2000,5000,10000]
@@ -10,7 +10,7 @@ rewards_arr = []
 for explore in exp_arr:
     env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
 
-    agent = agent1.mcts_Agent(
+    agent = agent.mcts_Agent(
         action_space=env.action_space,
         num_actions=env.max_allowed_actions,
         explore=explore,

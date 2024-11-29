@@ -10,8 +10,7 @@ from MCTS import our_mcts
 from pyRDDLGym.core.env import RDDLEnv
 from pyRDDLGym.core.debug.exception import RDDLRandPolicyVecNotImplemented
 
-from MCTS.our_mcts import explore_c
-
+explore_c = 1000 ;
 
 class BaseAgent(metaclass=ABCMeta):
     '''Base class for policies.'''

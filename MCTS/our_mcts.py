@@ -2,7 +2,8 @@ import time
 import math
 from copy import deepcopy
 import pyRDDLGym
-import agent1
+from MCTS import random_agent #import RandomAgent
+
 # import pygraphviz as pgv
 from collections import deque
 from binarytree import build
@@ -112,12 +113,12 @@ class MCTS:
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
-        agent = agent1.RandomAgent(
+        agent = random_agent.RandomAgent(
             action_space=tmp_env.action_space,
             num_actions=tmp_env.max_allowed_actions)
         simulated_reward = 0
-        for step in range(tmp_env.horizon-self.root_node.depth):
-            # print("inner step ", step)
+        for step in range(tmp_env.horizon-self.root_node.depth+1):
+            print("inner step ", step)
             action = agent.sample_action(state)
             next_state, reward, terminated, truncated, _ = tmp_env.step(action)
             simulated_reward = simulated_reward + reward
