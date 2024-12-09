@@ -4,7 +4,7 @@ from MCTS import agent
 
 import pyRDDLGym.core.policy
 #exp_arr = [400,400,400,400,400,100,100,100,100,100,1,5,10,100,500,1000,2000,5000,10000]
-exp_arr = [100]
+exp_arr = [0.2]
 
 rewards_arr = []
 for explore in exp_arr:
@@ -14,7 +14,7 @@ for explore in exp_arr:
         action_space=env.action_space,
         num_actions=env.max_allowed_actions,
         explore=explore,
-        search_time=1)
+        search_time=30)
 
     cmlt_reward = 0
     state, _ = env.reset()

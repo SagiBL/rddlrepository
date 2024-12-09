@@ -118,7 +118,7 @@ class MCTS:
             num_actions=tmp_env.max_allowed_actions)
         simulated_reward = 0
         for step in range(tmp_env.horizon-self.root_node.depth+1):
-            print("inner step ", step)
+            #print("inner step ", step)
             action = agent.sample_action(state)
             next_state, reward, terminated, truncated, _ = tmp_env.step(action)
             simulated_reward = simulated_reward + reward

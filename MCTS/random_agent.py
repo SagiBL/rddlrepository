@@ -8,8 +8,6 @@ from typing import Any, Dict, Optional
 from pyRDDLGym.core.env import RDDLEnv
 from pyRDDLGym.core.debug.exception import RDDLRandPolicyVecNotImplemented
 
-explore_c = 1000 ;
-
 class BaseAgent(metaclass=ABCMeta):
     '''Base class for policies.'''
 

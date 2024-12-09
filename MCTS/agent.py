@@ -6,11 +6,12 @@ import shutil
 from typing import Any, Dict, Optional
 
 from MCTS import our_mcts
+from MCTS import ments
 
 from pyRDDLGym.core.env import RDDLEnv
 from pyRDDLGym.core.debug.exception import RDDLRandPolicyVecNotImplemented
 
-explore_c = 1000 ;
+explore_c = 3
 
 class BaseAgent(metaclass=ABCMeta):
     '''Base class for policies.'''
@@ -231,7 +232,7 @@ class mcts_Agent(BaseAgent):
 
 
     def smart(self,state,depth_of_root):            #the framework for running the mcts
-        mcts = our_mcts.MCTS(state, depth_of_root, explore=self.explore)
+        mcts = ments.MCTS(state, depth_of_root, explore=self.explore)
         print("Thinking...")
         mcts.search(self.search_time) #how much time it runs
         num_rollouts, run_time = mcts.statistics()
