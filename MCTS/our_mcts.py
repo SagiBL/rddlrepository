@@ -19,7 +19,7 @@ max_green = 60
 class Node:    #define the format of the nodes
     def __init__(self, parent, state):
         self.parent = parent
-        self.N = 0
+        self.N = 1
         self.total_reward = 0
         self.child_stay = None
         self.child_change = None

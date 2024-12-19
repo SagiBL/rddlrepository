@@ -14,7 +14,7 @@ for explore in exp_arr:
         action_space=env.action_space,
         num_actions=env.max_allowed_actions,
         explore=explore,
-        search_time=30)
+        search_time=10)
 
     cmlt_reward = 0
     state, _ = env.reset()

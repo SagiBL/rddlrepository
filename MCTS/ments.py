@@ -10,7 +10,7 @@ from binarytree import build
 
 alfa = 0.1
 explore_MENTS = 1
-gama = 0.95
+gama = 0.8
 max_reward = -12000
 red_time = 4
 min_green = 6
@@ -29,8 +29,8 @@ class Node:    #define the format of the nodes
         else:
             self.depth = 0
         self.state = state
-        self.q_soft_stay = 0
-        self.q_soft_change = 0
+        self.q_soft_stay = -100
+        self.q_soft_change = -100
         self.IsChange = change
 
         self.v_soft = 0
@@ -39,14 +39,15 @@ class Node:    #define the format of the nodes
         if self.state['signal___i0'] % 2 == 1 and max_green > self.state['signal-t___i0'] >= min_green:
             self.actions = 2
 
-    def Jpolicy_stay(self, explore=explore_MENTS):
-        if self.parent is None:
-            return 100
-        else:
-            lamda = explore*self.actions / (1 + math.log(self.N))
-            val_stay = (1 - lamda) * math.exp((self.q_soft_stay - self.v_soft) / alfa) + lamda * (1/self.actions)
-            val_change = (1 - lamda) * math.exp((self.q_soft_change - self.v_soft) / alfa) + lamda * (1 / self.actions)
-            return val_stay > val_change
+    def Jpolicy_stay(self, debugg, explore=explore_MENTS):
+        lamda_stay = explore*self.actions / (1 + math.log(self.N))
+        lamda_change = explore*self.actions / (1 + math.log(self.N))
+        val_stay = (1 - lamda_stay) * math.exp((self.q_soft_stay - self.v_soft) / alfa) + lamda_stay * (1/self.actions)
+        val_change = (1 - lamda_change) * math.exp((self.q_soft_change - self.v_soft) / alfa) + lamda_change * (1 / self.actions)
+        if debugg:
+            x=1
+            #print(x)
+        return val_stay > val_change
 
 
 class MCTS:
@@ -65,6 +66,7 @@ class MCTS:
 
     def step(self):   # preforms one step of expansion and simulates it
         node = self.root_node
+        debugg = True
         while node.child_stay is not None or node.child_change is not None:   #choose the best child and advance state accordingly
             if node.child_stay is None:
                 node = node.child_change
@@ -72,12 +74,13 @@ class MCTS:
             elif node.child_change is None:
                 node = node.child_stay
                 #print("must stay")
-            elif node.Jpolicy_stay(self.explore):
+            elif node.Jpolicy_stay(debugg=debugg, explore=self.explore):
                 node = node.child_stay
                 #print("decide to stay")
             else:
                 node = node.child_change
                 #print("decide to change")
+            debugg = False
 
         # print("finish")
         # print(node.state['signal___i0'])
@@ -131,7 +134,7 @@ class MCTS:
             action_space=tmp_env.action_space,
             num_actions=tmp_env.max_allowed_actions)
         simulated_reward = 0
-        for step in range(tmp_env.horizon-self.root_node.depth+1):
+        for step in range(tmp_env.horizon):# -self.root_node.depth+1):
             #print("inner step ", step)
             action = agent.sample_action(state)
             next_state, reward, terminated, truncated, _ = tmp_env.step(action)
