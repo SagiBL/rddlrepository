@@ -1,5 +1,6 @@
 import time
 import math
+import random
 from copy import deepcopy
 import pyRDDLGym
 from MCTS import random_agent #import RandomAgent
@@ -15,6 +16,7 @@ max_reward = -12000
 red_time = 4
 min_green = 6
 max_green = 60
+default_action_number = 2
 
 class Node:    #define the format of the nodes
     def __init__(self, parent, state, change):
@@ -29,21 +31,22 @@ class Node:    #define the format of the nodes
         else:
             self.depth = 0
         self.state = state
-        self.q_soft_stay = -100
-        self.q_soft_change = -100
+        self.q_soft_stay = 0
+        self.q_soft_change = 0
         self.IsChange = change
 
         self.v_soft = 0
         self.G = 0
-        self.actions = 1
-        if self.state['signal___i0'] % 2 == 1 and max_green > self.state['signal-t___i0'] >= min_green:
-            self.actions = 2
+        # self.actions = 1
+        # if self.state['signal___i0'] % 2 == 1 and max_green > self.state['signal-t___i0'] >= min_green:
+        #     self.actions = 2
 
     def Jpolicy_stay(self, debugg, explore=explore_MENTS):
-        lamda_stay = explore*self.actions / (1 + math.log(self.N))
-        lamda_change = explore*self.actions / (1 + math.log(self.N))
-        val_stay = (1 - lamda_stay) * math.exp((self.q_soft_stay - self.v_soft) / alfa) + lamda_stay * (1/self.actions)
-        val_change = (1 - lamda_change) * math.exp((self.q_soft_change - self.v_soft) / alfa) + lamda_change * (1 / self.actions)
+        stay_prob = random.uniform(0, 1)
+        change_prob = 1-stay_prob
+        lamda = (explore*default_action_number) / (1 + math.log(self.N))
+        val_stay = (1 - lamda) * math.exp((self.q_soft_stay - self.v_soft) / alfa) + lamda * stay_prob
+        val_change = (1 - lamda) * math.exp((self.q_soft_change - self.v_soft) / alfa) + lamda * change_prob
         if debugg:
             x=1
             #print(x)
@@ -88,32 +91,33 @@ class MCTS:
 
         if node.state['signal___i0'] % 2 == 0:
             if node.state['signal-t___i0'] < red_time: #if it's still red light
-                tmp_state = self.one_step(node.state, self.stay)
+                tmp_state, node.reward_stay = self.one_step(node.state, self.stay)
                 node.child_stay = Node(node, tmp_state, False)  # create the stay_child
-                node.reward_stay = self.simulate(tmp_state)             #
+
             else: #if it's done being red light
-                tmp_state = self.one_step(node.state, self.change)
+                tmp_state, node.reward_change = self.one_step(node.state, self.change)
                 node.child_change = Node(node, tmp_state, True)  # create the change_child
-                node.reward_change = self.simulate(tmp_state)           #
+
         else:
             if node.state['signal-t___i0'] < min_green: #if it's too early to change
-                tmp_state = self.one_step(node.state, self.stay)
+                tmp_state, node.reward_stay = self.one_step(node.state, self.stay)
                 node.child_stay = Node(node, tmp_state, False)  # create the stay_child
-                node.reward_stay = self.simulate(tmp_state)             #
-            elif node.state['signal-t___i0'] >= max_green: #if reached the maximum time without changing
-                tmp_state = self.one_step(node.state, self.change)
-                node.child_change = Node(node, tmp_state, True)  # create the change_child
-                node.reward_change = self.simulate(tmp_state)           #
-            else: #both changing and staying are legal moves
-                tmp_state = self.one_step(node.state, self.stay)
-                node.child_stay = Node(node, tmp_state, False)  # create the stay_child
-                node.reward_stay = self.simulate(tmp_state)
-                tmp_state = self.one_step(node.state, self.change)
-                node.child_change = Node(node, tmp_state, True)  # create the change_child
-                node.reward_change = self.simulate(tmp_state)
 
-        node.reward_stay = (node.reward_stay - max_reward) / 10000
-        node.reward_change = (node.reward_change - max_reward) / 10000 #to make the values a bit smaller
+            elif node.state['signal-t___i0'] >= max_green: #if reached the maximum time without changing
+                tmp_state, node.reward_change = self.one_step(node.state, self.change)
+                node.child_change = Node(node, tmp_state, True)  # create the change_child
+
+            else: #both changing and staying are legal moves
+                tmp_state, node.reward_stay = self.one_step(node.state, self.stay)
+                node.child_stay = Node(node, tmp_state, False)  # create the stay_child
+
+                tmp_state, node.reward_change = self.one_step(node.state, self.change)
+                node.child_change = Node(node, tmp_state, True)  # create the change_child
+                #print("stay_reward",node.reward_stay,"|| change_reward",node.reward_change)
+
+
+        node.reward_stay = node.reward_stay/100
+        node.reward_change = node.reward_change/100 #to make the values a bit smaller
         self.root_node = self.back_propagate(node) #doing it like that make it so it simulates and gives a reward to the children, but don't backpropogate it upwards until it will reach them again
 
 
@@ -123,8 +127,7 @@ class MCTS:
         tmp_env.set_state(state)
         next_state, reward, terminated, truncated, _ = tmp_env.step(action)
         tmp_env.close()
-        return next_state
-
+        return next_state, reward
 
     def simulate(self, state):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
@@ -145,17 +148,27 @@ class MCTS:
         tmp_env.close()
         return simulated_reward
 
+    def calc_g(self, node):
+        original_node = node
+        G = 0
+        while node.parent is not None:
+            node = node.parent
+            if node.IsChange:
+                G = G + node.reward_change * (gama ** node.depth)
+            else:
+                G = G + node.reward_stay * (gama ** node.depth)
+        return original_node, G
+
     def back_propagate(self, node):
         first_time = True
         while node.parent is not None:
-            if node.IsChange:
-                G = node.parent.q_soft_change
-            else:
-                G = node.parent.q_soft_stay
             node.N += 1
             if first_time:
-                node.q_soft_stay = node.reward_stay + gama * G
-                node.q_soft_change = node.reward_change + gama * G
+                node, G = self.calc_g(node)
+                if node.IsChange:
+                    node.q_soft_stay = node.reward_change + gama * G
+                else:
+                    node.q_soft_change = node.reward_stay + gama * G
                 first_time = False
             else:
                 if node.child_stay is not None: node.q_soft_stay = node.reward_stay + gama * node.child_stay.v_soft
@@ -171,6 +184,33 @@ class MCTS:
             node.q_soft_change = node.reward_change + gama * node.child_change.v_soft
         node.v_soft = alfa * math.log(math.exp(node.q_soft_stay / alfa) + math.exp(node.q_soft_change / alfa))
         return node
+
+    # def back_propagate(self, node):
+    #     first_time = True
+    #     while node.parent is not None:
+    #         if node.IsChange:
+    #             G = node.parent.q_soft_change
+    #         else:
+    #             G = node.parent.q_soft_stay
+    #         node.N += 1
+    #         if first_time:
+    #             node.q_soft_stay = node.reward_stay + gama * G
+    #             node.q_soft_change = node.reward_change + gama * G
+    #             first_time = False
+    #         else:
+    #             if node.child_stay is not None: node.q_soft_stay = node.reward_stay + gama * node.child_stay.v_soft
+    #             if node.child_change is not None: node.q_soft_change = node.reward_change + gama * node.child_change.v_soft
+    #         node.v_soft = alfa * math.log(math.exp(node.q_soft_stay/alfa) + math.exp(node.q_soft_change/alfa))
+    #         node = node.parent
+    #     node.N += 1
+    #     if first_time:
+    #         node.q_soft_stay = node.reward_stay
+    #         node.q_soft_change = node.reward_change
+    #     else:
+    #         node.q_soft_stay = node.reward_stay + gama * node.child_stay.v_soft
+    #         node.q_soft_change = node.reward_change + gama * node.child_change.v_soft
+    #     node.v_soft = alfa * math.log(math.exp(node.q_soft_stay / alfa) + math.exp(node.q_soft_change / alfa))
+    #     return node
 
 
     def search(self, time_limit: int):

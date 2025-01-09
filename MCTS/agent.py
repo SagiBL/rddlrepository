@@ -239,7 +239,7 @@ class mcts_Agent(BaseAgent):
         print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
         action = mcts.best_action()
         #print("MCTS chose action: ", action)
-        #self.printing(mcts)
+        self.printing(mcts)
         return action
 
 
