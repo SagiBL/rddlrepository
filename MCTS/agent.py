@@ -230,7 +230,6 @@ class mcts_Agent(BaseAgent):
         #print("results", updated_results)
         ments.MCTS.build_tree(mcts, updated_visits)
 
-
     def smart(self,state,depth_of_root):            #the framework for running the mcts
         mcts = ments.MCTS(state, depth_of_root, explore=self.explore)
         print("Thinking...")

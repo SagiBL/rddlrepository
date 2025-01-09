@@ -212,7 +212,6 @@ class MCTS:
     #     node.v_soft = alfa * math.log(math.exp(node.q_soft_stay / alfa) + math.exp(node.q_soft_change / alfa))
     #     return node
 
-
     def search(self, time_limit: int):
         start_time = time.process_time()
 

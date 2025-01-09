@@ -4,7 +4,7 @@ from MCTS import agent
 
 import pyRDDLGym.core.policy
 #exp_arr = [400,400,400,400,400,100,100,100,100,100,1,5,10,100,500,1000,2000,5000,10000]
-exp_arr = [1]
+exp_arr = [2]
 
 rewards_arr = []
 for explore in exp_arr:
