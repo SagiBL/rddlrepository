@@ -7,6 +7,8 @@ from typing import Any, Dict, Optional
 
 from MCTS import our_mcts
 from MCTS import ments
+from MCTS import ments2
+
 
 from pyRDDLGym.core.env import RDDLEnv
 from pyRDDLGym.core.debug.exception import RDDLRandPolicyVecNotImplemented
@@ -212,7 +214,7 @@ class mcts_Agent(BaseAgent):
         results = []
         values = []
         visits = []
-        updated_results, updated_values, updated_visits = ments.MCTS.bfs_traversal(mcts, results, values, visits)
+        updated_results, updated_values, updated_visits = our_mcts.MCTS.bfs_traversal(mcts, results, values, visits)
         # cnt=0
         # prev=1
         # for num in updated_results:
@@ -228,10 +230,10 @@ class mcts_Agent(BaseAgent):
         #print("visits", updated_visits)
         #print("values", updated_values)
         #print("results", updated_results)
-        ments.MCTS.build_tree(mcts, updated_visits)
+        our_mcts.MCTS.build_tree(mcts, updated_visits)
 
     def smart(self,state,depth_of_root):            #the framework for running the mcts
-        mcts = ments.MCTS(state, depth_of_root, explore=self.explore)
+        mcts = our_mcts.MCTS(state, depth_of_root, explore=self.explore)
         print("Thinking...")
         mcts.search(self.search_time) #how much time it runs
         num_rollouts, run_time = mcts.statistics()

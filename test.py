@@ -1,10 +1,11 @@
 from rddlrepository.core.manager import RDDLRepoManager
 manager = RDDLRepoManager(rebuild=True)
 from MCTS import agent
-
+import numpy as np
 import pyRDDLGym.core.policy
+
 #exp_arr = [400,400,400,400,400,100,100,100,100,100,1,5,10,100,500,1000,2000,5000,10000]
-exp_arr = [2]
+exp_arr = [500]
 
 rewards_arr = []
 for explore in exp_arr:
@@ -14,7 +15,7 @@ for explore in exp_arr:
         action_space=env.action_space,
         num_actions=env.max_allowed_actions,
         explore=explore,
-        search_time=15)
+        search_time=60)
 
     cmlt_reward = 0
     state, _ = env.reset()
@@ -35,3 +36,31 @@ print(exp_arr)
 print(rewards_arr)
 #print("average for explore=100",(rewards_arr[0]+rewards_arr[1]+rewards_arr[2]+rewards_arr[3]+rewards_arr[4])/5)
 #print("average for explore=100",(rewards_arr[5]+rewards_arr[6]+rewards_arr[7]+rewards_arr[8]+rewards_arr[9])/5)
+
+
+
+# explore = 400
+# rewards_arr = []
+#
+# for i in range(100):
+#     env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+#
+#     agent1 = agent.RandomAgent(
+#         action_space=env.action_space,
+#         num_actions=env.max_allowed_actions)
+#
+#     cmlt_reward = 0
+#     state, _ = env.reset()
+#     for step in range(env.horizon):
+#         action = agent1.sample_action(state)
+#         next_state, reward, terminated, truncated, _ = env.step(action)
+#         cmlt_reward = cmlt_reward + reward
+#         state = next_state
+#         if truncated or terminated:
+#             break
+#     env.close()
+#     rewards_arr.append(cmlt_reward)
+#     print(cmlt_reward)
+# rewards_arr = np.array(rewards_arr)
+# print("min_reward =",np.min(rewards_arr))
+# print("max_reward =",np.max(rewards_arr))

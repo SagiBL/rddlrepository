@@ -1,16 +1,17 @@
 import time
 import math
-from copy import deepcopy
 import pyRDDLGym
 from MCTS import random_agent #import RandomAgent
+import matplotlib.pyplot as plt
+from copy import deepcopy
+import random
 
 # import pygraphviz as pgv
 from collections import deque
 from binarytree import build
 
 explore_c=1000
-# max_reward = -17644.851216448555
-max_reward = -12000
+min_reward = -10000                    #the worst simulated reward for random agent
 sim_reward = 0
 red_time = 4
 min_green = 6
@@ -25,16 +26,19 @@ class Node:    #define the format of the nodes
         self.child_change = None
         if parent is not None:
             self.depth = parent.depth + 1
+            self.reward_to_node = parent.reward_to_node
         else:
             self.depth = 0
+            self.reward_to_node = 0
         self.state = state
+
 
 
     def value(self, explore=explore_c):  #calculate the UCB
         if self.parent is None:
             return 100
         else:
-            val = int(-max_reward+(self.total_reward / self.N) + explore * math.sqrt(math.log(self.parent.N) / self.N))
+            val = -min_reward+(self.total_reward / self.N) + explore * math.sqrt(math.log(self.parent.N) / self.N)
             return val
 
 
@@ -61,9 +65,13 @@ class MCTS:
                 node = node.child_stay
                 #print("must stay")
             elif node.child_stay.value(self.explore) < node.child_change.value(self.explore):
+                #if node.depth == 11:
+                #    print("N =",node.N,"stay value =", node.child_stay.value(self.explore), "change value =", node.child_change.value(self.explore))
                 node = node.child_change
                 #print("decide to change")
             else:
+                #if node.depth == 11:
+                #    print("N =",node.N,"stay value =", node.child_stay.value(self.explore), "change value =", node.child_change.value(self.explore))
                 node = node.child_stay
                 #print("decide to stay")
 
@@ -73,31 +81,41 @@ class MCTS:
 
         if node.state['signal___i0'] % 2 == 0:
             if node.state['signal-t___i0'] < red_time: #if it's still red light
-                tmp_state = self.one_step(node.state, self.stay)
+                tmp_state, step_reward = self.one_step(node.state, self.stay)
                 node.child_stay = Node(node, tmp_state)  # create the stay_child
-                node.child_stay.total_reward = self.simulate(tmp_state)             #
+                node.child_stay.reward_to_node += step_reward
+                node.child_stay.total_reward = self.simulate(tmp_state, node.child_stay.depth) + node.child_stay.reward_to_node
+                self.root_node = self.back_propagate(node.child_stay, node.child_stay.total_reward)
             else: #if it's done being red light
-                tmp_state = self.one_step(node.state, self.change)
+                tmp_state, step_reward = self.one_step(node.state, self.change)
                 node.child_change = Node(node, tmp_state)  # create the change_child
-                node.child_change.total_reward = self.simulate(tmp_state)           #
+                node.child_change.reward_to_node += step_reward
+                node.child_change.total_reward = self.simulate(tmp_state, node.child_change.depth) + node.child_change.reward_to_node
+                self.root_node = self.back_propagate(node.child_change, node.child_change.total_reward)
         else:
             if node.state['signal-t___i0'] < min_green: #if it's too early to change
-                tmp_state = self.one_step(node.state, self.stay)
+                tmp_state, step_reward = self.one_step(node.state, self.stay)
                 node.child_stay = Node(node, tmp_state)  # create the stay_child
-                node.child_stay.total_reward = self.simulate(tmp_state)             #
+                node.child_stay.reward_to_node += step_reward
+                node.child_stay.total_reward = self.simulate(tmp_state, node.child_stay.depth) + node.child_stay.reward_to_node             #
+                self.root_node = self.back_propagate(node.child_stay, node.child_stay.total_reward)
             elif node.state['signal-t___i0'] == max_green: #if reached the maximum time without changing
-                tmp_state = self.one_step(node.state, self.change)
+                tmp_state, step_reward = self.one_step(node.state, self.change)
                 node.child_change = Node(node, tmp_state)  # create the change_child
-                node.child_change.total_reward = self.simulate(tmp_state)           #
+                node.child_change.reward_to_node += step_reward
+                node.child_change.total_reward = self.simulate(tmp_state, node.child_change.depth) + node.child_change.reward_to_node           #
+                self.root_node = self.back_propagate(node.child_change, node.child_change.total_reward)
             else: #both changing and staying are legal moves
-                tmp_state = self.one_step(node.state, self.stay)
+                tmp_state, step_reward = self.one_step(node.state, self.stay)
                 node.child_stay = Node(node, tmp_state)  # create the stay_child
-                node.child_stay.total_reward = self.simulate(tmp_state)
-                tmp_state = self.one_step(node.state, self.change)
+                node.child_stay.reward_to_node += step_reward
+                node.child_stay.total_reward = self.simulate(tmp_state, node.child_stay.depth) + node.child_stay.reward_to_node
+                self.root_node = self.back_propagate(node.child_stay, node.child_stay.total_reward)
+                tmp_state, step_reward = self.one_step(node.state, self.change)
                 node.child_change = Node(node, tmp_state)  # create the change_child
-                node.child_change.total_reward = self.simulate(tmp_state)
-
-        self.root_node = self.back_propagate(node, node.total_reward) #doing it like that make it so it simulates and gives a reward to the children, but don't backpropogate it upwards until it will reach them again
+                node.child_change.reward_to_node += step_reward
+                node.child_change.total_reward = self.simulate(tmp_state, node.child_change.depth) + node.child_change.reward_to_node
+                self.root_node = self.back_propagate(node.child_change, node.child_change.total_reward)
 
 
     def one_step(self, state, action):
@@ -106,10 +124,10 @@ class MCTS:
         tmp_env.set_state(state)
         next_state, reward, terminated, truncated, _ = tmp_env.step(action)
         tmp_env.close()
-        return next_state
+        return next_state, reward
 
 
-    def simulate(self, state):
+    def simulate(self, state, depth):
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
@@ -117,9 +135,14 @@ class MCTS:
             action_space=tmp_env.action_space,
             num_actions=tmp_env.max_allowed_actions)
         simulated_reward = 0
-        for step in range(tmp_env.horizon-self.root_node.depth+1):
+        values = [1, 0]
+        probabilities = [0.3, 0.7]
+        for step in range(tmp_env.horizon-depth):
             #print("inner step ", step)
             action = agent.sample_action(state)
+            variable = random.choices(values, probabilities)[0]
+            if variable and state['signal___i0'] % 2 == 1 and max_green > state['signal-t___i0'] >= min_green:
+                action = self.stay
             next_state, reward, terminated, truncated, _ = tmp_env.step(action)
             simulated_reward = simulated_reward + reward
             state = next_state
@@ -131,11 +154,9 @@ class MCTS:
 
     def back_propagate(self, node, reward):
         while node.parent is not None:
+            node = node.parent
             node.N += 1
             node.total_reward += reward
-            node = node.parent
-        node.N += 1
-        node.total_reward += reward
         return node
 
 
@@ -174,7 +195,7 @@ class MCTS:
                 queue.append(None)
                 queue.append(None)
             else:
-                results.append(int(-max_reward+(current_node.total_reward / current_node.N)))  # Visit the node
+                results.append(int(-min_reward+(current_node.total_reward / current_node.N)))  # Visit the node
                 values.append(current_node.value(self.explore))
                 visits.append(current_node.N)
                 queue.append(current_node.child_change)                    # Enqueue the left and right children
@@ -182,54 +203,38 @@ class MCTS:
 
         return results,values,visits
 
-    def build_tree(self,result):
+    def build_tree(self, visits):
         # Creating binary tree from given list
-        binary_tree = build(result)
-        print('Binary tree from list :\n',
-              binary_tree)
+        binary_tree = build(visits)
+        # print('Binary tree from list :\n',
+        #      binary_tree)
         print('\nList from binary tree :',
               binary_tree.values)
 
+        # fig, ax = plt.subplots(figsize=(50, 10))
+        # plot_binary_tree(self.root_node, ax=ax)
+        #
+        # # Set aspect, remove axes, and display the tree
+        # ax.set_aspect('equal')
+        # ax.axis('off')  # Remove axes
+        # plt.savefig('binary_tree.png', format='png')
 
-    # def graphics(self,node, graph=None):
-    #     if graph is None:
-    #         graph = pgv.AGraph(directed=True)
-    #
-    #         # Create a node in the graph for the current tree node
-    #     if node is not None:
-    #         graph.add_node((node.total_reward / node.N))
-    #
-    #         # If there is a change child, add an edge and recurse
-    #         if node.child_change is not None:
-    #             graph.add_edge((node.total_reward / node.N), (node.child_change.total_reward / node.child_change.N))
-    #             graphics(node.child_change, graph)
-    #
-    #         # If there is a stay child, add an edge and recurse
-    #         if node.child_stay is not None:
-    #             graph.add_edge((node.total_reward / node.N), (node.child_stay.total_reward / node.child_stay.N))
-    #             graphics(node.child_stay, graph)
-    #
-    #     return graph
-    #
-    # def visualize_tree(self):
-    #     graph = graphics(self.root_node)
-    #     graph.layout(prog='dot')  # Layout the graph using dot
-    #     graph.draw('binary_tree.png')
-    #
-    # def build_list(self, node, list=None):
-    #     if node is not None:
-    #         list.append((node.total_reward / node.N))
-    #
-    #         # If there is a change child, add an edge and recurse
-    #         if node.child_change is not None:
-    #             build_list(node.child_change, list)
-    #
-    #         # If there is a stay child, add an edge and recurse
-    #         if node.child_stay is not None:
-    #             graph.add_edge((node.total_reward / node.N), (node.child_stay.total_reward / node.child_stay.N))
-    #             graphics(node.child_stay, graph)
-    #
-    #     else:
-    #         list.append(None)
-    #
-    #     return graph
+def plot_binary_tree(root, x=0, y=0, layer=1, width=100000.0, ax=None):
+    """Recursively plot the binary tree using matplotlib."""
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(50, 10))
+
+    # If the current node is not None
+    if root:
+        ax.text(x, y, str(root.N), ha='center', va='center', fontsize=8,
+                bbox=dict(facecolor='skyblue', edgecolor='black', boxstyle='round,pad=1'))
+
+        if root.child_change:
+            ax.plot([x, x - width], [y - 2500, y - 5000], color="black", lw=2)  # Draw edge to left child
+            plot_binary_tree(root.child_change, x - width, y - 5000, layer + 1, (width / 1.6) + 200, ax)
+
+        if root.child_stay:
+            ax.plot([x, x + width], [y - 2500, y - 5000], color="black", lw=2)  # Draw edge to right child
+            plot_binary_tree(root.child_stay, x + width, y - 5000, layer + 1, (width / 1.6) + 200, ax)
+
+    return ax
