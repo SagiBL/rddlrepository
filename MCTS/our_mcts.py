@@ -11,7 +11,7 @@ from collections import deque
 from binarytree import build
 
 explore_c=1000
-min_reward = -10000                    #the worst simulated reward for random agent
+default_min_reward = -10000                    #the worst simulated reward for random agent
 sim_reward = 0
 red_time = 4
 min_green = 6
@@ -34,7 +34,7 @@ class Node:    #define the format of the nodes
 
 
 
-    def value(self, explore=explore_c):  #calculate the UCB
+    def value(self, explore=explore_c, min_reward=default_min_reward):  #calculate the UCB
         if self.parent is None:
             return 100
         else:
@@ -43,7 +43,7 @@ class Node:    #define the format of the nodes
 
 
 class MCTS:
-    def __init__(self, state, depth_of_root, explore=explore_c):    #initialize the tree
+    def __init__(self, state, depth_of_root, explore=explore_c, instance=0, min_reward=default_min_reward):    #initialize the tree
         self.root_state = deepcopy(state)
         self.root_node = Node(None, self.root_state)
         self.root_node.depth = depth_of_root
@@ -53,6 +53,8 @@ class MCTS:
         self.stay = {'advance___i0':0}    #this is dumb but it works for now
         self.change = {'advance___i0':1}
         self.explore = explore
+        self.instance = instance
+        self.min_reward = min_reward
 
 
     def step(self):   # preforms one step of expansion and simulates it
@@ -64,7 +66,7 @@ class MCTS:
             elif node.child_change is None:
                 node = node.child_stay
                 #print("must stay")
-            elif node.child_stay.value(self.explore) < node.child_change.value(self.explore):
+            elif node.child_stay.value(self.explore, self.min_reward) < node.child_change.value(self.explore, self.min_reward):
                 #if node.depth == 11:
                 #    print("N =",node.N,"stay value =", node.child_stay.value(self.explore), "change value =", node.child_change.value(self.explore))
                 node = node.child_change
@@ -119,7 +121,7 @@ class MCTS:
 
 
     def one_step(self, state, action):
-        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=self.instance)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
         next_state, reward, terminated, truncated, _ = tmp_env.step(action)
@@ -128,7 +130,7 @@ class MCTS:
 
 
     def simulate(self, state, depth):
-        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=self.instance)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
         agent = random_agent.RandomAgent(
@@ -172,7 +174,7 @@ class MCTS:
 
 
     def best_action(self):    #returns the best move for the next iteration
-        if self.root_node.child_stay.value(explore=0) < self.root_node.child_change.value(explore=0):
+        if self.root_node.child_stay.value(explore=0, min_reward=0) < self.root_node.child_change.value(explore=0, min_reward=0):
             return self.change
         else:
             return self.stay
@@ -195,8 +197,8 @@ class MCTS:
                 queue.append(None)
                 queue.append(None)
             else:
-                results.append(int(-min_reward+(current_node.total_reward / current_node.N)))  # Visit the node
-                values.append(current_node.value(self.explore))
+                results.append(int(-self.min_reward+(current_node.total_reward / current_node.N)))  # Visit the node
+                values.append(current_node.value(self.explore, self.min_reward))
                 visits.append(current_node.N)
                 queue.append(current_node.child_change)                    # Enqueue the left and right children
                 queue.append(current_node.child_stay)

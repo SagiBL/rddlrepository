@@ -4,63 +4,74 @@ from MCTS import agent
 import numpy as np
 import pyRDDLGym.core.policy
 
-#exp_arr = [400,400,400,400,400,100,100,100,100,100,1,5,10,100,500,1000,2000,5000,10000]
-exp_arr = [500]
+exp_arr = [100,500,1000]
+search_time = 10
+instance = 1
 
-rewards_arr = []
-for explore in exp_arr:
-    env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+def test(exp_arr, search_time, instance, min_reward):
+    rewards_arr = []
+    exp_arr = exp_arr
+    for explore in exp_arr:
+        env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=instance)
 
-    agent = agent.mcts_Agent(
-        action_space=env.action_space,
-        num_actions=env.max_allowed_actions,
-        explore=explore,
-        search_time=60)
+        agent2 = agent.mcts_Agent(
+            action_space=env.action_space,
+            num_actions=env.max_allowed_actions,
+            explore=explore,
+            search_time=search_time,
+            instance=instance,
+            min_reward=min_reward)
 
-    cmlt_reward = 0
-    state, _ = env.reset()
-    for step in range(env.horizon):
-        print("step =", step,"| reward =", cmlt_reward)
-        #env.render(to_display=True)
-        action = agent.sample_action(state,step)
-        next_state, reward, terminated, truncated, _ = env.step(action)
-        cmlt_reward = cmlt_reward + reward
-        state = next_state
-        if truncated or terminated:
-            break
-    #print(f'Episode ended with cumulative reward {cmlt_reward}')
-    #print("for explore =",explore,"the reward is", cmlt_reward)
-    env.close()
-    rewards_arr.append(cmlt_reward)
-print(exp_arr)
-print(rewards_arr)
-#print("average for explore=100",(rewards_arr[0]+rewards_arr[1]+rewards_arr[2]+rewards_arr[3]+rewards_arr[4])/5)
-#print("average for explore=100",(rewards_arr[5]+rewards_arr[6]+rewards_arr[7]+rewards_arr[8]+rewards_arr[9])/5)
+        cmlt_reward = 0
+        state, _ = env.reset()
+        for step in range(env.horizon):
+            print("step =", step, "| reward =", cmlt_reward)
+            # env.render(to_display=True)
+            action = agent2.sample_action(state, step)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            cmlt_reward = cmlt_reward + reward
+            state = next_state
+            if truncated or terminated:
+                break
+        #print("for explore =",explore,"the reward is", cmlt_reward)
+        env.close()
+        rewards_arr.append(cmlt_reward)
 
+    return rewards_arr
 
 
-# explore = 400
-# rewards_arr = []
-#
-# for i in range(100):
-#     env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
-#
-#     agent1 = agent.RandomAgent(
-#         action_space=env.action_space,
-#         num_actions=env.max_allowed_actions)
-#
-#     cmlt_reward = 0
-#     state, _ = env.reset()
-#     for step in range(env.horizon):
-#         action = agent1.sample_action(state)
-#         next_state, reward, terminated, truncated, _ = env.step(action)
-#         cmlt_reward = cmlt_reward + reward
-#         state = next_state
-#         if truncated or terminated:
-#             break
-#     env.close()
-#     rewards_arr.append(cmlt_reward)
-#     print(cmlt_reward)
-# rewards_arr = np.array(rewards_arr)
-# print("min_reward =",np.min(rewards_arr))
-# print("max_reward =",np.max(rewards_arr))
+
+
+def find_min_max_reward(instance):
+    print("calculating min_reward ...")
+    rewards_arr = []
+
+    for i in range(100):
+        env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=instance)
+
+        agent1 = agent.RandomAgent(
+            action_space=env.action_space,
+            num_actions=env.max_allowed_actions)
+
+        cmlt_reward = 0
+        state, _ = env.reset()
+        for step in range(env.horizon):
+            action = agent1.sample_action(state)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            cmlt_reward = cmlt_reward + reward
+            state = next_state
+            if truncated or terminated:
+                break
+        env.close()
+        rewards_arr.append(cmlt_reward)
+
+    rewards_arr = np.array(rewards_arr)
+    return np.min(rewards_arr), np.max(rewards_arr)
+
+
+min_reward, max_reward = find_min_max_reward(instance)
+rewards_arr = test(exp_arr, search_time, instance, min_reward)
+print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
+print("explore =", exp_arr)
+print("reward =", rewards_arr)
+

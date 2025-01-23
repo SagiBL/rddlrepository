@@ -12,6 +12,7 @@ from binarytree import build
 
 alfa = 0.02
 explore_MENTS = 1
+default_min_reward = -10000
 gama = 0.95
 max_reward = -12000
 max_step_reward = 0
@@ -58,7 +59,7 @@ class Node:    #define the format of the nodes
 
 
 class MCTS:
-    def __init__(self, state, depth_of_root, explore=explore_MENTS):    #initialize the tree
+    def __init__(self, state, depth_of_root, explore=explore_MENTS, instance=0, min_reward=default_min_reward):    #initialize the tree
         self.root_state = deepcopy(state)
         self.root_node = Node(None, self.root_state, False)
         self.root_node.depth = depth_of_root
@@ -68,6 +69,8 @@ class MCTS:
         self.stay = {'advance___i0':0}    #this is dumb but it works for now
         self.change = {'advance___i0':1}
         self.explore = explore
+        self.instance = instance
+        self.min_reward = min_reward
 
 
     def step(self):   # preforms one step of expansion and simulates it
@@ -131,7 +134,7 @@ class MCTS:
 
 
     def one_step(self, state, action):
-        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=self.instance)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
         next_state, reward, terminated, truncated, _ = tmp_env.step(action)
@@ -139,7 +142,7 @@ class MCTS:
         return next_state, reward
 
     def simulate(self, state):
-        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases',instance=self.instance)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
         agent = random_agent.RandomAgent(

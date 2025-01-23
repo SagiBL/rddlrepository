@@ -53,7 +53,7 @@ class Node:    #define the format of the nodes
 
 
 class MCTS:
-    def __init__(self, state, depth_of_root, explore=explore_c):    #initialize the tree
+    def __init__(self, state, depth_of_root, explore=explore_c, instance=0):    #initialize the tree
         self.root_state = deepcopy(state)
         self.root_node = Node(None, self.root_state, True)
         self.root_node.depth = depth_of_root
@@ -63,7 +63,7 @@ class MCTS:
         self.stay = {'advance___i0':0}    #this is dumb but it works for now
         self.change = {'advance___i0':1}
         self.explore = explore
-
+        self.instance = instance
 
     def step(self):   # preforms one step of expansion and simulates it
         node = self.root_node
@@ -122,7 +122,7 @@ class MCTS:
 
 
     def one_step(self, state, action):
-        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=self.instance)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
         next_state, reward, terminated, truncated, _ = tmp_env.step(action)
@@ -131,7 +131,7 @@ class MCTS:
 
 
     def simulate(self, state):
-        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', 0)
+        tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=self.instance)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
         agent = random_agent.RandomAgent(

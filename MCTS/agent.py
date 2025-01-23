@@ -13,7 +13,8 @@ from MCTS import ments2
 from pyRDDLGym.core.env import RDDLEnv
 from pyRDDLGym.core.debug.exception import RDDLRandPolicyVecNotImplemented
 
-explore_c = 3
+explore_c = 500
+default_min_reward = 10000
 
 class BaseAgent(metaclass=ABCMeta):
     '''Base class for policies.'''
@@ -201,13 +202,15 @@ class NoOpAgent(BaseAgent):
 
 
 class mcts_Agent(BaseAgent):
-    def __init__(self, action_space, num_actions=0, explore=explore_c,search_time=0):
+    def __init__(self, action_space, num_actions=0, explore=explore_c,search_time=0,instance=0, min_reward=default_min_reward):
         self.action_space = action_space
         self.num_actions = num_actions
         self.stay = {'advance___i0': 0}  # this is dumb but it works for now
         self.change = {'advance___i0': 1}
         self.explore = explore
+        self.instance = instance
         self.search_time = search_time
+        self.min_reward = min_reward
 
 
     def printing(self, mcts):
@@ -233,7 +236,7 @@ class mcts_Agent(BaseAgent):
         our_mcts.MCTS.build_tree(mcts, updated_visits)
 
     def smart(self,state,depth_of_root):            #the framework for running the mcts
-        mcts = our_mcts.MCTS(state, depth_of_root, explore=self.explore)
+        mcts = our_mcts.MCTS(state, depth_of_root, explore=self.explore, instance=self.instance, min_reward= self.min_reward)
         print("Thinking...")
         mcts.search(self.search_time) #how much time it runs
         num_rollouts, run_time = mcts.statistics()
