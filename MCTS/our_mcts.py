@@ -1,17 +1,15 @@
 import time
 import math
 import pyRDDLGym
-from MCTS import random_agent #import RandomAgent
+from MCTS import agent
 import matplotlib.pyplot as plt
 from copy import deepcopy
 import random
-
-# import pygraphviz as pgv
 from collections import deque
 from binarytree import build
 
 explore_c=1000
-default_min_reward = -10000                    #the worst simulated reward for random agent
+default_min_reward = -10000         #the worst simulated reward for random agent
 sim_reward = 0
 red_time = 4
 min_green = 6
@@ -133,7 +131,7 @@ class MCTS:
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=self.instance)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
-        agent = random_agent.RandomAgent(
+        agent1 = agent.RandomAgent(
             action_space=tmp_env.action_space,
             num_actions=tmp_env.max_allowed_actions)
         simulated_reward = 0
@@ -141,7 +139,7 @@ class MCTS:
         probabilities = [0.3, 0.7]
         for step in range(tmp_env.horizon-depth):
             #print("inner step ", step)
-            action = agent.sample_action(state)
+            action = agent1.sample_action(state)
             variable = random.choices(values, probabilities)[0]
             if variable and state['signal___i0'] % 2 == 1 and max_green > state['signal-t___i0'] >= min_green:
                 action = self.stay
@@ -179,6 +177,7 @@ class MCTS:
         else:
             return self.stay
 
+    ###from here the code is only for displaying the results
 
     def statistics(self):      #return the overall calculation statistics
         return self.num_rollouts, self.run_time
@@ -197,29 +196,26 @@ class MCTS:
                 queue.append(None)
                 queue.append(None)
             else:
-                results.append(int(-self.min_reward+(current_node.total_reward / current_node.N)))  # Visit the node
+                results.append(current_node.value(explore=0, min_reward=self.min_reward))  # Visit the node
                 values.append(current_node.value(self.explore, self.min_reward))
                 visits.append(current_node.N)
-                queue.append(current_node.child_change)                    # Enqueue the left and right children
+                queue.append(current_node.child_change)                # Enqueue the left and right children
                 queue.append(current_node.child_stay)
 
         return results,values,visits
 
     def build_tree(self, visits):
-        # Creating binary tree from given list
-        binary_tree = build(visits)
-        # print('Binary tree from list :\n',
-        #      binary_tree)
-        print('\nList from binary tree :',
-              binary_tree.values)
+        binary_tree = build(visits)           # Creating binary tree from given list
+        # print('Binary tree from list :\n', binary_tree)
+        print('\nList from binary tree :', binary_tree.values)
 
-        # fig, ax = plt.subplots(figsize=(50, 10))
-        # plot_binary_tree(self.root_node, ax=ax)
-        #
-        # # Set aspect, remove axes, and display the tree
-        # ax.set_aspect('equal')
-        # ax.axis('off')  # Remove axes
-        # plt.savefig('binary_tree.png', format='png')
+        fig, ax = plt.subplots(figsize=(50, 10))
+        plot_binary_tree(self.root_node, ax=ax)
+
+        # Set aspect, remove axes, and display the tree
+        ax.set_aspect('equal')
+        ax.axis('off')  # Remove axes
+        plt.savefig('binary_tree'+ str(self.root_node.depth) +'.png', format='png')
 
 def plot_binary_tree(root, x=0, y=0, layer=1, width=100000.0, ax=None):
     """Recursively plot the binary tree using matplotlib."""

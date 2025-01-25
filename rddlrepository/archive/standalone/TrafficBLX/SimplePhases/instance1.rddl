@@ -76,9 +76,9 @@ non-fluents isolated_intersection {
         SINK(l7);
 
         // arrival rate from each source
-        SOURCE-ARRIVAL-RATE(l0) = 0.5;
-        SOURCE-ARRIVAL-RATE(l2) = 0.1;
-        SOURCE-ARRIVAL-RATE(l4) = 0.5;
+        SOURCE-ARRIVAL-RATE(l0) = 0.4;
+        SOURCE-ARRIVAL-RATE(l2) = 0.15;
+        SOURCE-ARRIVAL-RATE(l4) = 0.55;
         SOURCE-ARRIVAL-RATE(l6) = 0.1;
 
         // green turns
