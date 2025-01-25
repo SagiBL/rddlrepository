@@ -4,10 +4,12 @@ import agent
 import numpy as np
 import pyRDDLGym.core.policy
 
+seed = None
 exp_arr = [500]
-search_time = 1
-instance = 1
-use_uct = True       ### choose to use uct or ments
+search_time = 10
+instance = 0
+use_uct = True      ### choose to use uct or ments
+                    ### True if uct and False if ments
 
 def test(exp_arr, search_time, instance, min_reward):
     rewards_arr = []
@@ -25,7 +27,7 @@ def test(exp_arr, search_time, instance, min_reward):
             use_uct = use_uct)
 
         cmlt_reward = 0
-        state, _ = env.reset()
+        state, _ = env.reset(seed=seed)
         for step in range(env.horizon):
             print("step =", step, "| reward =", cmlt_reward)
             #env.render(to_display=True)
@@ -71,7 +73,7 @@ def find_min_max_reward(instance):
 
 
 #min_reward, max_reward = find_min_max_reward(instance)
-min_reward = -13000
+min_reward = -10000
 rewards_arr = test(exp_arr, search_time, instance, min_reward)
 #print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
 print("explore =", exp_arr)

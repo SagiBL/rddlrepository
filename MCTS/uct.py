@@ -209,13 +209,13 @@ class MCTS:
         # print('Binary tree from list :\n', binary_tree)
         print('\nList from binary tree :', binary_tree.values)
 
-        fig, ax = plt.subplots(figsize=(50, 10))
-        plot_binary_tree(self.root_node, ax=ax)
-
-        # Set aspect, remove axes, and display the tree
-        ax.set_aspect('equal')
-        ax.axis('off')  # Remove axes
-        plt.savefig('binary_tree'+ str(self.root_node.depth) +'.png', format='png')
+        # fig, ax = plt.subplots(figsize=(50, 10))
+        # plot_binary_tree(self.root_node, ax=ax)
+        #
+        # # Set aspect, remove axes, and display the tree
+        # ax.set_aspect('equal')
+        # ax.axis('off')  # Remove axes
+        # plt.savefig('binary_tree'+ str(self.root_node.depth) +'.png', format='png')
 
 def plot_binary_tree(root, x=0, y=0, layer=1, width=100000.0, ax=None):
     """Recursively plot the binary tree using matplotlib."""
