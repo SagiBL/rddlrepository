@@ -4,9 +4,9 @@ from MCTS import agent
 import numpy as np
 import pyRDDLGym.core.policy
 
-exp_arr = [500]
-search_time = 1
-instance = 1
+exp_arr = [500,600,700,800]
+search_time = 15
+instance = [3]
 
 def test(exp_arr, search_time, instance, min_reward):
     rewards_arr = []
@@ -25,19 +25,20 @@ def test(exp_arr, search_time, instance, min_reward):
         cmlt_reward = 0
         state, _ = env.reset()
         for step in range(env.horizon):
-            print("step =", step, "| reward =", cmlt_reward)
-            env.render(to_display=True)
+            # print("step =", step, "| reward =", cmlt_reward)
+            # env.render(to_display=True)
             action = agent2.sample_action(state, step)
             next_state, reward, terminated, truncated, _ = env.step(action)
             cmlt_reward = cmlt_reward + reward
             state = next_state
             if truncated or terminated:
                 break
-        print("for explore =",explore,"the reward is", cmlt_reward)
+        #print("for explore =",explore,"the reward is", cmlt_reward)
         env.close()
         rewards_arr.append(cmlt_reward)
 
     return rewards_arr
+
 
 
 
@@ -68,10 +69,10 @@ def find_min_max_reward(instance):
     return np.min(rewards_arr), np.max(rewards_arr)
 
 
-#min_reward, max_reward = find_min_max_reward(instance)
-min_reward = -13000
-rewards_arr = test(exp_arr, search_time, instance, min_reward)
-#print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
-print("explore =", exp_arr)
-print("reward =", rewards_arr)
+for inst in instance:
+    min_reward, max_reward = find_min_max_reward(inst)
+    rewards_arr = test(exp_arr, search_time, inst, min_reward)
+    print("instance =", inst, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
+    print("explore =", exp_arr)
+    print("reward =", rewards_arr)
 
