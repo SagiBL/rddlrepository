@@ -7,6 +7,7 @@ import pyRDDLGym.core.policy
 exp_arr = [500]
 search_time = 1
 instance = 1
+use_uct = True       ### choose to use uct or ments
 
 def test(exp_arr, search_time, instance, min_reward):
     rewards_arr = []
@@ -20,13 +21,14 @@ def test(exp_arr, search_time, instance, min_reward):
             explore=explore,
             search_time=search_time,
             instance=instance,
-            min_reward=min_reward)
+            min_reward=min_reward,
+            use_uct = use_uct)
 
         cmlt_reward = 0
         state, _ = env.reset()
         for step in range(env.horizon):
             print("step =", step, "| reward =", cmlt_reward)
-            env.render(to_display=True)
+            #env.render(to_display=True)
             action = agent2.sample_action(state, step)
             next_state, reward, terminated, truncated, _ = env.step(action)
             cmlt_reward = cmlt_reward + reward

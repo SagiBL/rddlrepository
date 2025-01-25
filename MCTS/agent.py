@@ -5,12 +5,12 @@ import gymnasium as gym
 import shutil
 from typing import Any, Dict, Optional
 
-from MCTS import our_mcts
+from MCTS import uct
 from MCTS import ments
-
 
 from pyRDDLGym.core.env import RDDLEnv
 from pyRDDLGym.core.debug.exception import RDDLRandPolicyVecNotImplemented
+
 
 explore_c = 500
 default_min_reward = 10000
@@ -201,7 +201,7 @@ class NoOpAgent(BaseAgent):
 
 
 class mcts_Agent(BaseAgent):
-    def __init__(self, action_space, num_actions=0, explore=explore_c,search_time=0,instance=0, min_reward=default_min_reward):
+    def __init__(self, action_space, num_actions=0, explore=explore_c,search_time=0,instance=0, min_reward=default_min_reward, use_uct = True):
         self.action_space = action_space
         self.num_actions = num_actions
         self.stay = {'advance___i0': 0}  # this is dumb but it works for now
@@ -210,24 +210,27 @@ class mcts_Agent(BaseAgent):
         self.instance = instance
         self.search_time = search_time
         self.min_reward = min_reward
+        if use_uct:
+            self.cur_mcts = uct
+        else:
+            self.cur_mcts = ments
 
-
-    def printing(self, mcts):
+    def printing(self, MCTS):
         results = []
         values = []
         visits = []
-        updated_results, updated_values, updated_visits = our_mcts.MCTS.bfs_traversal(mcts, results, values, visits)
-        our_mcts.MCTS.build_tree(mcts, updated_visits)
+        updated_results, updated_values, updated_visits = MCTS.bfs_traversal(results, values, visits)
+        MCTS.build_tree(updated_visits)
 
     def smart(self,state,depth_of_root):            #the framework for running the mcts
-        mcts = our_mcts.MCTS(state, depth_of_root, explore=self.explore, instance=self.instance, min_reward= self.min_reward)
+        mcts = self.cur_mcts.MCTS(state, depth_of_root, explore=self.explore, instance=self.instance, min_reward= self.min_reward)
         # print("Thinking...")
         mcts.search(self.search_time) #how much time it runs
         num_rollouts, run_time = mcts.statistics()
         # print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
         action = mcts.best_action()
         #print("MCTS chose action: ", action)
-        # self.printing(mcts)
+        self.printing(mcts)
         return action
 
 
