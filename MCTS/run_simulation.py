@@ -4,7 +4,6 @@ import agent
 import numpy as np
 import pyRDDLGym.core.policy
 
-
 seed = None
 exp_arr = [500,500,500,500,500]
 search_time = 30
