@@ -6,8 +6,8 @@ import pyRDDLGym.core.policy
 
 
 seed = None
-exp_arr = [500]
-search_time = 10
+exp_arr = [500,500,500,500,500]
+search_time = 30
 instance = 0
 use_uct = True      ### choose to use uct or ments
                     ### True if uct and False if ments
@@ -30,7 +30,7 @@ def test(exp_arr, search_time, instance, min_reward):
         cmlt_reward = 0
         state, _ = env.reset(seed=seed)
         for step in range(env.horizon):
-            print("step =", step, "| reward =", cmlt_reward)
+            #print("step =", step, "| reward =", cmlt_reward)
             #env.render(to_display=True)
             action = agent2.sample_action(state, step)
             next_state, reward, terminated, truncated, _ = env.step(action)
@@ -38,16 +38,15 @@ def test(exp_arr, search_time, instance, min_reward):
             state = next_state
             if truncated or terminated:
                 break
-        print("for explore =",explore,"the reward is", cmlt_reward)
+        #print("for explore =",explore,"the reward is", cmlt_reward)
         env.close()
         rewards_arr.append(cmlt_reward)
-
+        print("cmlt_reward =", cmlt_reward)
     return rewards_arr
 
 
 
 def find_min_max_reward(instance):
-    print("calculating min_reward ...")
     rewards_arr = []
 
     for i in range(100):
@@ -73,10 +72,10 @@ def find_min_max_reward(instance):
     return np.min(rewards_arr), np.max(rewards_arr)
 
 
-#min_reward, max_reward = find_min_max_reward(instance)
-min_reward = -10000
+print("calculating min_reward ...")
+min_reward, max_reward = find_min_max_reward(instance)
+print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
 rewards_arr = test(exp_arr, search_time, instance, min_reward)
-#print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
 print("explore =", exp_arr)
 print("reward =", rewards_arr)
 

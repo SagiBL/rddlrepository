@@ -222,13 +222,13 @@ class mcts_Agent(BaseAgent):
 
     def smart(self,state,depth_of_root):            #the framework for running the mcts
         mcts = self.cur_mcts.MCTS(state, depth_of_root, explore=self.explore, instance=self.instance, min_reward= self.min_reward)
-        print("Thinking...")
+        #print("Thinking...")
         mcts.search(self.search_time) #how much time it runs
         num_rollouts, run_time = mcts.statistics()
-        print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
+        #print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
         action = mcts.best_action()
         #print("MCTS chose action: ", action)
-        self.printing(mcts)
+        #self.printing(mcts)
         return action
 
 

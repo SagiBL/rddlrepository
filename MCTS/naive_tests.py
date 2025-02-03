@@ -5,8 +5,7 @@ import random
 import numpy as np
 
 
-seed = None
-instance=1
+instance=0
 in_arr = {0,1,2,3}
 values = [1, 0]
 probabilities = [0.3, 0.7]
@@ -15,11 +14,12 @@ probabilities = [0.3, 0.7]
 def test(instance):
     env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=instance)
     cmlt_reward = 0
-    state, _ = env.reset(seed=seed)
+    state, _ = env.reset()
     for step in range(env.horizon):
-        env.render(to_display=True)
+        #env.render(to_display=True)
         variable = random.choices(values, probabilities)[0]
-        action = {'advance___i0':variable}
+        #action = {'advance___i0':variable}
+        action = {'advance___i0': 1}
         _, reward, terminated, truncated, _ = env.step(action)
         cmlt_reward = cmlt_reward + reward
         if truncated or terminated:
