@@ -137,7 +137,7 @@ class MCTS:
             num_actions=tmp_env.max_allowed_actions)
         simulated_reward = 0
         values = [1, 0]
-        probabilities = [0.3, 0.7]
+        probabilities = [0.1, 0.9]
         for step in range(tmp_env.horizon-depth):
             #print("inner step ", step)
             action = agent1.sample_action(state)

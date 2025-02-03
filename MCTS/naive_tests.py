@@ -6,10 +6,10 @@ import numpy as np
 
 
 seed = None
-instance=0
+instance=1
 in_arr = {0,1,2,3}
 values = [1, 0]
-probabilities = [0.5, 0.5]
+probabilities = [0.3, 0.7]
 
 
 def test(instance):
@@ -17,7 +17,7 @@ def test(instance):
     cmlt_reward = 0
     state, _ = env.reset(seed=seed)
     for step in range(env.horizon):
-        #env.render(to_display=True)
+        env.render(to_display=True)
         variable = random.choices(values, probabilities)[0]
         action = {'advance___i0':variable}
         _, reward, terminated, truncated, _ = env.step(action)
@@ -27,14 +27,17 @@ def test(instance):
     env.close()
     return cmlt_reward
 
+
+print("reward =", test(instance))
+
 # for instance in in_arr:
 #     reward = test(instance)
 #     print("instance =", instance, "|| cmlt_reward =", reward)
 
 
-rewards_arr = []
-for i in range(50):
-    rewards_arr.append(test(instance))
-
-rewards = np.array(rewards_arr)
-print("instance =", instance, "|| reward_mean =", np.mean(rewards), "|| reward_median =", np.median(rewards))
+# rewards_arr = []
+# for i in range(50):
+#     rewards_arr.append(test(instance))
+#
+# rewards = np.array(rewards_arr)
+# print("instance =", instance, "|| reward_mean =", np.mean(rewards), "|| reward_median =", np.median(rewards))
