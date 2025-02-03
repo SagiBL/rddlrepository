@@ -72,9 +72,10 @@ def find_min_max_reward(instance):
     return np.min(rewards_arr), np.max(rewards_arr)
 
 
-print("calculating min_reward ...")
-min_reward, max_reward = find_min_max_reward(instance)
-print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
+# print("calculating min_reward ...")
+# min_reward, max_reward = find_min_max_reward(instance)
+# print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
+min_reward = -10000
 rewards_arr = test(exp_arr, search_time, instance, min_reward)
 print("explore =", exp_arr)
 print("reward =", rewards_arr)
