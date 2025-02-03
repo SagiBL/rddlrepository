@@ -6,6 +6,12 @@ The two python files in this folder should replace the files in the venv in orde
 ## files location in venv
 venv/Lib/site-packages/pyRDDLGym/core
 
+## functions added in env:
+    def set_state(self, state):
+        sampler = self.sampler
+        sampler.set_state(state)
+        self.state = state
+        
 ## functions added in simulator:
     def update_subs(self, setstate):
         rddl = self.rddl
@@ -46,11 +52,5 @@ venv/Lib/site-packages/pyRDDLGym/core
         keep_tensors = self.keep_tensors
         self.update_subs(setstate)
         subs = self.subs
-
-## functions added in env:
-   def set_state(self, state):
-        sampler = self.sampler
-        sampler.set_state(state)
-        self.state = state
-        # return obs, reward
+      
     
