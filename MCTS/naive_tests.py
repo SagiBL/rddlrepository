@@ -1,10 +1,10 @@
 from rddlrepository.core.manager import RDDLRepoManager
 manager = RDDLRepoManager(rebuild=True)
-import pyRDDLGym.core.policy
 import random
 import numpy as np
+import pyRDDLGym
 
-
+SEED = 42
 instance=0
 in_arr = {0,1,2,3}
 values = [1, 0]
@@ -13,8 +13,9 @@ probabilities = [0.3, 0.7]
 
 def test(instance):
     env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=instance)
+    env.seed(SEED)
+    state, _ = env.reset(seed=SEED)
     cmlt_reward = 0
-    state, _ = env.reset()
     for step in range(env.horizon):
         #env.render(to_display=True)
         variable = random.choices(values, probabilities)[0]
