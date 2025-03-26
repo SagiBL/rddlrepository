@@ -9,7 +9,7 @@ from collections import deque
 from binarytree import build
 
 
-explore_c=1000
+explore_c=500
 default_min_reward = -10000         #the worst simulated reward for random agent
 sim_reward = 0
 red_time = 4
@@ -49,7 +49,7 @@ class MCTS:
         self.run_time = 0
         self.node_count = 0
         self.num_rollouts = 0
-        self.stay = {'advance___i0':0}    #this is dumb but it works for now
+        self.stay = {'advance___i0':0}
         self.change = {'advance___i0':1}
         self.explore = explore
         self.instance = instance
@@ -59,26 +59,18 @@ class MCTS:
     def step(self):   # preforms one step of expansion and simulates it
         node = self.root_node
         while node.child_stay is not None or node.child_change is not None:   #choose the best child and advance state accordingly
-            if node.child_stay is None:
+            if node.child_stay is None:       #"must change"
                 node = node.child_change
-                #print("must change")
-            elif node.child_change is None:
-                node = node.child_stay
-                #print("must stay")
-            elif node.child_stay.value(self.explore, self.min_reward) < node.child_change.value(self.explore, self.min_reward):
-                #if node.depth == 11:
-                #    print("N =",node.N,"stay value =", node.child_stay.value(self.explore), "change value =", node.child_change.value(self.explore))
-                node = node.child_change
-                #print("decide to change")
-            else:
-                #if node.depth == 11:
-                #    print("N =",node.N,"stay value =", node.child_stay.value(self.explore), "change value =", node.child_change.value(self.explore))
-                node = node.child_stay
-                #print("decide to stay")
 
-        # print("finish")
-        # print(node.state['signal___i0'])
-        # print(node.state['signal-t___i0'])
+            elif node.child_change is None:   #"must stay"
+                node = node.child_stay
+
+            elif node.child_stay.value(self.explore, self.min_reward) < node.child_change.value(self.explore, self.min_reward):  #"decide to change"
+                node = node.child_change
+
+            else:                             #"decide to stay"
+                node = node.child_stay
+
 
         if node.state['signal___i0'] % 2 == 0:
             if node.state['signal-t___i0'] < red_time: #if it's still red light
@@ -119,7 +111,7 @@ class MCTS:
                 self.root_node = self.back_propagate(node.child_change, node.child_change.total_reward)
 
 
-    def one_step(self, state, action):
+    def one_step(self, state, action):    #advances the simulatin one step
         tmp_env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=self.instance)
         _ = tmp_env.reset()
         tmp_env.set_state(state)
@@ -139,7 +131,6 @@ class MCTS:
         values = [1, 0]
         probabilities = [0.1, 0.9]
         for step in range(tmp_env.horizon-depth):
-            #print("inner step ", step)
             action = agent1.sample_action(state)
             variable = random.choices(values, probabilities)[0]
             if variable and state['signal___i0'] % 2 == 1 and max_green > state['signal-t___i0'] >= min_green:
@@ -161,8 +152,7 @@ class MCTS:
         return node
 
 
-
-    def search(self, time_limit: int):
+    def search(self, time_limit: int):     #find the next step
         start_time = time.process_time()
 
         while time.process_time() - start_time < time_limit:
@@ -183,40 +173,16 @@ class MCTS:
     def statistics(self):      #return the overall calculation statistics
         return self.num_rollouts, self.run_time
 
-    def bfs_traversal(self,results,values,visits):
-        """Perform breadth-first traversal and return a list of values."""
-        root = self.root_node
-        queue = deque([root])  # Initialize the queue with the root node
 
-        for i in range(2000):
-            current_node = queue.popleft()  # Dequeue the front node
-            if current_node is None:
-                results.append(0)
-                values.append(0)
-                visits.append(0)
-                queue.append(None)
-                queue.append(None)
-            else:
-                results.append(current_node.value(explore=0, min_reward=self.min_reward))  # Visit the node
-                values.append(current_node.value(self.explore, self.min_reward))
-                visits.append(current_node.N)
-                queue.append(current_node.child_change)                # Enqueue the left and right children
-                queue.append(current_node.child_stay)
+    def print_tree(self):
+        fig, ax = plt.subplots(figsize=(50, 10))
+        plot_binary_tree(self.root_node, ax=ax)
 
-        return results,values,visits
+        # Set aspect, remove axes, and display the tree
+        ax.set_aspect('equal')
+        ax.axis('off')  # Remove axes
+        plt.savefig('binary_tree'+ str(self.root_node.depth) +'.png', format='png')
 
-    def build_tree(self, visits):
-        binary_tree = build(visits)           # Creating binary tree from given list
-        # print('Binary tree from list :\n', binary_tree)
-        print('\nList from binary tree :', binary_tree.values)
-
-        # fig, ax = plt.subplots(figsize=(50, 10))
-        # plot_binary_tree(self.root_node, ax=ax)
-        #
-        # # Set aspect, remove axes, and display the tree
-        # ax.set_aspect('equal')
-        # ax.axis('off')  # Remove axes
-        # plt.savefig('binary_tree'+ str(self.root_node.depth) +'.png', format='png')
 
 def plot_binary_tree(root, x=0, y=0, layer=1, width=100000.0, ax=None):
     """Recursively plot the binary tree using matplotlib."""

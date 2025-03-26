@@ -81,6 +81,7 @@ non-fluents isolated_intersection {
         SOURCE-ARRIVAL-RATE(l4) = 0.3;
         SOURCE-ARRIVAL-RATE(l6) = 0.3;
 
+
         // green turns
         GREEN(l0,l5,@WEST-EAST-LEFT);
         GREEN(l4,l1,@WEST-EAST-LEFT);

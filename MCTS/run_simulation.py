@@ -1,15 +1,16 @@
 from rddlrepository.core.manager import RDDLRepoManager
 manager = RDDLRepoManager(rebuild=True)
-import agent
+from MCTS import agent
 import numpy as np
 import pyRDDLGym.core.policy
 
 seed = None
-exp_arr = [500,500,500,500,500]
 search_time = 30
 instance = 0
-use_uct = True      ### choose to use uct or ments
+use_uct = False     ### choose to use uct or ments
                     ### True if uct and False if ments
+exp_arr = [500] if use_uct else [1]
+ToPrint = False     ### choose to print
 
 def test(exp_arr, search_time, instance, min_reward):
     rewards_arr = []
@@ -17,27 +18,28 @@ def test(exp_arr, search_time, instance, min_reward):
     for explore in exp_arr:
         env = pyRDDLGym.make('TrafficBLX_SimplePhases', instance=instance)
 
-        agent2 = agent.mcts_Agent(
+        MCTSagent = agent.mcts_Agent(
             action_space=env.action_space,
             num_actions=env.max_allowed_actions,
             explore=explore,
             search_time=search_time,
             instance=instance,
             min_reward=min_reward,
-            use_uct = use_uct)
+            use_uct = use_uct,
+            ToPrint=ToPrint)
 
         cmlt_reward = 0
         state, _ = env.reset(seed=seed)
         for step in range(env.horizon):
-            #print("step =", step, "| reward =", cmlt_reward)
-            #env.render(to_display=True)
-            action = agent2.sample_action(state, step)
+            env.render(to_display=True)
+            action = MCTSagent.sample_action(state, step)
+            print_action = "stay" if action=={'advance___i0': 0} else "change"
+            print("step =", step, "| reward =", cmlt_reward,"| action =", print_action)
             next_state, reward, terminated, truncated, _ = env.step(action)
             cmlt_reward = cmlt_reward + reward
             state = next_state
             if truncated or terminated:
                 break
-        #print("for explore =",explore,"the reward is", cmlt_reward)
         env.close()
         rewards_arr.append(cmlt_reward)
         print("cmlt_reward =", cmlt_reward)
@@ -71,10 +73,10 @@ def find_min_max_reward(instance):
     return np.min(rewards_arr), np.max(rewards_arr)
 
 
-# print("calculating min_reward ...")
-# min_reward, max_reward = find_min_max_reward(instance)
-# print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
-min_reward = -10000
+print("calculating min_reward ...")
+min_reward, max_reward = find_min_max_reward(instance)
+print("instance =", instance, "|| min_reward =", min_reward, "|| max_reward =", max_reward)
+
 rewards_arr = test(exp_arr, search_time, instance, min_reward)
 print("explore =", exp_arr)
 print("reward =", rewards_arr)

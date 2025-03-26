@@ -199,7 +199,7 @@ class NoOpAgent(BaseAgent):
 
 
 class mcts_Agent(BaseAgent):
-    def __init__(self, action_space, num_actions=0, explore=explore_c,search_time=0,instance=0, min_reward=default_min_reward, use_uct = True):
+    def __init__(self, action_space, num_actions=0, explore=explore_c,search_time=0,instance=0, min_reward=default_min_reward, use_uct = True, ToPrint=False):
         self.action_space = action_space
         self.num_actions = num_actions
         self.stay = {'advance___i0': 0}  # this is dumb but it works for now
@@ -212,23 +212,18 @@ class mcts_Agent(BaseAgent):
             self.cur_mcts = uct
         else:
             self.cur_mcts = ments
+        self.ToPrint = ToPrint
 
-    def printing(self, MCTS):
-        results = []
-        values = []
-        visits = []
-        updated_results, updated_values, updated_visits = MCTS.bfs_traversal(results, values, visits)
-        MCTS.build_tree(updated_visits)
 
     def smart(self,state,depth_of_root):            #the framework for running the mcts
         mcts = self.cur_mcts.MCTS(state, depth_of_root, explore=self.explore, instance=self.instance, min_reward= self.min_reward)
-        #print("Thinking...")
+        print("Thinking...")
         mcts.search(self.search_time) #how much time it runs
         num_rollouts, run_time = mcts.statistics()
-        #print("Statistics: ", num_rollouts, "rollouts in", run_time, "seconds")
+        print("rollouts:", num_rollouts)
         action = mcts.best_action()
-        #print("MCTS chose action: ", action)
-        #self.printing(mcts)
+        if self.ToPrint:
+            mcts.print_tree()
         return action
 
 
